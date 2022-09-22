@@ -1,0 +1,41 @@
+{
+    "signOffCommits": false,
+    "prefixes": [
+        {
+            "title": "fix",
+            "description": "Bug fix. Correlates with PATCH in SemVer"
+        },
+        {
+            "title": "feat",
+            "description": "New feature. Correlates with MINOR in SemVer"
+        },
+        {
+            "title": "docs",
+            "description": "Changes to documentation or code comments"
+        },
+        {
+            "title": "style",
+            "description": "Changes that do not affect the meaning of the code (e.g. formatting)"
+        },
+        {
+            "title": "refactor",
+            "description": "Changes that neither fix a bug nor add a feature"
+        },
+        {
+            "title": "perf",
+            "description": "Changes that improve performance"
+        },
+        {
+            "title": "test",
+            "description": "Changes that add missing or corrects existing tests"
+        },
+        {
+            "title": "build",
+            "description": "Changes to the build system or external dependencies"
+        },
+        {
+            "title": "ci",
+            "description": "Changes to CI/CD configuration files or scripts"
+        }
+    ]
+}
