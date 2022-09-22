@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 	"os/exec"
+	"strings"
 )
 
 const maxGitRecursion = 32
@@ -19,11 +19,10 @@ func checkGitInPath() error {
 func findGitDir() (string, error) {
 	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
 	output, err := cmd.CombinedOutput()
-	
+
 	if err != nil {
 		return "", fmt.Errorf(string(output))
 	}
-
 
 	return strings.TrimSpace(string(output)), nil
 }
