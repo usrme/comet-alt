@@ -42,7 +42,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	var output string
 	if index == m.Index() {
-		output = selectedItemStyle.Render("> " + str)
+		output = selectedItemStyle.Render("» " + str)
 	} else {
 		output = itemStyle.Render(str)
 	}
