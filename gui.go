@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -18,13 +19,17 @@ const (
 )
 
 var (
+	orange               = lipgloss.Color("#f2ac01")
 	titleStyle           = lipgloss.NewStyle().MarginLeft(2)
 	itemStyle            = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle    = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("#ff55ff"))
+	selectedItemStyle    = lipgloss.NewStyle().PaddingLeft(2).Foreground(orange)
 	itemDescriptionStyle = lipgloss.NewStyle().PaddingLeft(2).Faint(true)
 	paginationStyle      = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle            = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
 	quitTextStyle        = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+	scopeInputText       = "What is the scope?"
+	msgInputText         = "What is the commit message?"
+	bodyInputText        = "Do you need to specify a body/footer?"
 )
 
 type itemDelegate struct{}
@@ -52,21 +57,21 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 }
 
 type model struct {
-	chosenPrefix bool
-	chosenScope  bool
-	chosenMsg    bool
-	chosenBody   bool
-	specifyBody  bool
-	prefix       string
-	scope        string
-	msg          string
-	prefixList   list.Model
-	msgInput     textinput.Model
-	scopeInput   textinput.Model
-	ynInput      textinput.Model
-	items        []prefix
-	quitting     bool
-	err          error
+	chosenPrefix       bool
+	chosenScope        bool
+	chosenMsg          bool
+	chosenBody         bool
+	specifyBody        bool
+	prefix             string
+	prefixDescription  string
+	scope              string
+	msg                string
+	prefixList         list.Model
+	msgInput           textinput.Model
+	scopeInput         textinput.Model
+	ynInput            textinput.Model
+	previousInputTexts string
+	quitting           bool
 }
 
 func newModel(prefixes []list.Item) *model {
@@ -153,7 +158,13 @@ func (m *model) updatePrefixList(msg tea.Msg) (tea.Model, tea.Cmd) {
 			i, ok := m.prefixList.SelectedItem().(prefix)
 			if ok {
 				m.prefix = i.Title()
+				m.prefixDescription = i.Description()
 				m.chosenPrefix = true
+				m.previousInputTexts = fmt.Sprintf(
+					"\n%s %s\n",
+					m.prefixList.Title,
+					lipgloss.NewStyle().Foreground(orange).Render(fmt.Sprintf("%s: %s", m.prefix, m.prefixDescription)),
+				)
 				m.scopeInput.Focus()
 			}
 		}
@@ -172,6 +183,12 @@ func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			m.chosenScope = true
 			m.scope = m.scopeInput.Value()
+			m.previousInputTexts = fmt.Sprintf(
+				"%s%s %s\n",
+				m.previousInputTexts,
+				scopeInputText,
+				lipgloss.NewStyle().Foreground(orange).Render(m.scope),
+			)
 			m.msgInput.Focus()
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -191,6 +208,12 @@ func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			m.chosenMsg = true
 			m.msg = m.msgInput.Value()
+			m.previousInputTexts = fmt.Sprintf(
+				"%s%s %s\n",
+				m.previousInputTexts,
+				msgInputText,
+				lipgloss.NewStyle().Foreground(orange).Render(m.msg),
+			)
 			m.ynInput.Focus()
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -214,6 +237,12 @@ func (m *model) updateYNInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.specifyBody = true
 			}
 			m.chosenBody = true
+			m.previousInputTexts = fmt.Sprintf(
+				"%s%s %s\n",
+				m.previousInputTexts,
+				bodyInputText,
+				lipgloss.NewStyle().Foreground(orange).Render(strconv.FormatBool(m.specifyBody)),
+			)
 			return m, tea.Quit
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -231,21 +260,31 @@ func (m *model) View() string {
 		return "\n" + m.prefixList.View()
 	case !m.chosenScope:
 		return titleStyle.Render(fmt.Sprintf(
-			"\nEnter a scope (enter to skip):\n\n%s\n\n%s",
+			"%s%s (Enter to skip / Esc to cancel):\n%s",
+			m.previousInputTexts,
+			scopeInputText,
 			m.scopeInput.View(),
-			"(esc to cancel)",
-		) + "\n")
+		))
 	case !m.chosenMsg:
 		return titleStyle.Render(fmt.Sprintf(
-			"\nEnter a commit message:\n\n%s\n\n%s",
+			"%s%s (Esc to cancel):\n%s",
+			m.previousInputTexts,
+			msgInputText,
 			m.msgInput.View(),
-			"(esc to cancel)",
-		) + "\n")
+		))
 	case !m.chosenBody:
-		return fmt.Sprintf("\nDo you need to specify a body/footer?\n\n%s\n", m.ynInput.View())
+		return titleStyle.Render(fmt.Sprintf(
+			"%s%s (Esc to cancel):\n%s",
+			m.previousInputTexts,
+			bodyInputText,
+			m.ynInput.View(),
+		))
 	case m.quitting:
 		return quitTextStyle.Render("Aborted.\n")
 	default:
-		return "\nCreating commit...\n"
+		return titleStyle.Render(fmt.Sprintf(
+			"%s\n---\n",
+			m.previousInputTexts,
+		))
 	}
 }
