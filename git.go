@@ -7,6 +7,21 @@ import (
 	"strings"
 )
 
+func noFilesInStaging() (bool, error) {
+	cmd := exec.Command("git", "diff", "--no-ext-diff", "--cached", "--name-only")
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return false, fmt.Errorf(string(output))
+	}
+
+	if strings.TrimSpace(string(output)) == "" {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
 func checkGitInPath() error {
 	if _, err := exec.LookPath("git"); err != nil {
 		return fmt.Errorf("cannot find git in PATH: %w", err)

@@ -21,6 +21,11 @@ func main() {
 		fail("Error: could not change directory: %s", err)
 	}
 
+	noAddedFiles, _ := noFilesInStaging()
+	if noAddedFiles {
+		fail("Error: no files added to staging")
+	}
+
 	prefixes, signOff, err := loadConfig()
 	if err != nil {
 		fail("Error: %s", err)
