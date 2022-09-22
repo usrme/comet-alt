@@ -12,8 +12,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const defaultWidth = 20
-const listHeight = 14
+const (
+	defaultWidth = 20
+	listHeight   = 16
+)
 
 var (
 	titleStyle           = lipgloss.NewStyle().MarginLeft(2)
