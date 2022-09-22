@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-const maxGitRecursion = 32
-
 func checkGitInPath() error {
 	if _, err := exec.LookPath("git"); err != nil {
 		return fmt.Errorf("cannot find git in PATH: %w", err)
