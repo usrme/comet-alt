@@ -1,4 +1,4 @@
-module github.com/liamg/comet
+module github.com/usrme/comet-alt
 
 go 1.17
 
