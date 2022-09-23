@@ -14,6 +14,8 @@ builds:
     env:
       # disable cross-compilation
       - CGO_ENABLED=0
+    hooks:
+      post: upx --best "{{ .Path }}"
 
 changelog:
   sort: asc
