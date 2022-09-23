@@ -19,10 +19,14 @@ const (
 )
 
 var (
-	orange               = lipgloss.Color("#f2ac01")
+	nordAuroraGreen      = lipgloss.Color("#a3be8c")
+	nordAuroraYellow     = lipgloss.Color("#ebcb8b")
+	nordAuroraOrange     = lipgloss.Color("#d08770")
+	filterPromptStyle    = lipgloss.NewStyle().Foreground(nordAuroraYellow)
+	filterCursorStyle    = lipgloss.NewStyle().Foreground(nordAuroraOrange)
 	titleStyle           = lipgloss.NewStyle().MarginLeft(2)
 	itemStyle            = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle    = lipgloss.NewStyle().PaddingLeft(2).Foreground(orange)
+	selectedItemStyle    = lipgloss.NewStyle().PaddingLeft(2).Foreground(nordAuroraGreen)
 	itemDescriptionStyle = lipgloss.NewStyle().PaddingLeft(2).Faint(true)
 	paginationStyle      = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle            = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
@@ -84,6 +88,8 @@ func newModel(prefixes []list.Item, config *config) *model {
 	prefixList.Styles.Title = titleStyle
 	prefixList.Styles.PaginationStyle = paginationStyle
 	prefixList.Styles.HelpStyle = helpStyle
+	prefixList.FilterInput.PromptStyle = filterPromptStyle
+	prefixList.FilterInput.CursorStyle = filterCursorStyle
 
 	// set up scope prompt
 	scopeInput := textinput.New()
@@ -177,7 +183,7 @@ func (m *model) updatePrefixList(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.previousInputTexts = fmt.Sprintf(
 					"\n%s %s\n",
 					m.prefixList.Title,
-					lipgloss.NewStyle().Foreground(orange).Render(fmt.Sprintf("%s: %s", m.prefix, m.prefixDescription)),
+					lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(fmt.Sprintf("%s: %s", m.prefix, m.prefixDescription)),
 				)
 				m.scopeInput.Focus()
 			}
@@ -201,7 +207,7 @@ func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				"%s%s %s\n",
 				m.previousInputTexts,
 				scopeInputText,
-				lipgloss.NewStyle().Foreground(orange).Render(m.scope),
+				lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(m.scope),
 			)
 			m.msgInput.Focus()
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -226,7 +232,7 @@ func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				"%s%s %s\n",
 				m.previousInputTexts,
 				msgInputText,
-				lipgloss.NewStyle().Foreground(orange).Render(m.msg),
+				lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(m.msg),
 			)
 			m.ynInput.Focus()
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -255,7 +261,7 @@ func (m *model) updateYNInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				"%s%s %s\n",
 				m.previousInputTexts,
 				bodyInputText,
-				lipgloss.NewStyle().Foreground(orange).Render(strconv.FormatBool(m.specifyBody)),
+				lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(strconv.FormatBool(m.specifyBody)),
 			)
 			return m, tea.Quit
 		case tea.KeyCtrlC, tea.KeyEsc:
