@@ -15,7 +15,7 @@ import (
 
 const (
 	defaultWidth = 20
-	listHeight   = 16
+	listHeight   = 15
 )
 
 var (
