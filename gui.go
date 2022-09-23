@@ -56,7 +56,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	} else {
 		output = itemStyle.Render(str)
 	}
-	output += itemDescriptionStyle.PaddingLeft(12 - len(str)).Render(i.Description())
+	output += itemDescriptionStyle.PaddingLeft(15 - len(str)).Render(i.Description())
 
 	_, _ = fmt.Fprint(w, output)
 }
