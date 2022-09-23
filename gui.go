@@ -162,6 +162,21 @@ func (m *model) CommitMessage() (string, bool) {
 	return fmt.Sprintf("%s: %s", prefix, m.msg), m.specifyBody
 }
 
+func (m *model) continueWithSelectedItem() {
+	i, ok := m.prefixList.SelectedItem().(prefix)
+	if ok {
+		m.prefix = i.Title()
+		m.prefixDescription = i.Description()
+		m.chosenPrefix = true
+		m.previousInputTexts = fmt.Sprintf(
+			"\n%s %s\n",
+			m.prefixList.Title,
+			lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(fmt.Sprintf("%s: %s", m.prefix, m.prefixDescription)),
+		)
+		m.scopeInput.Focus()
+	}
+}
+
 func (m *model) updatePrefixList(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -174,19 +189,23 @@ func (m *model) updatePrefixList(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 
-		case "enter":
-			i, ok := m.prefixList.SelectedItem().(prefix)
-			if ok {
-				m.prefix = i.Title()
-				m.prefixDescription = i.Description()
-				m.chosenPrefix = true
-				m.previousInputTexts = fmt.Sprintf(
-					"\n%s %s\n",
-					m.prefixList.Title,
-					lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(fmt.Sprintf("%s: %s", m.prefix, m.prefixDescription)),
-				)
-				m.scopeInput.Focus()
+		case "1", "2", "3", "4", "5", "6", "7", "8", "9", "0":
+			var index int
+			if keypress == "0" && len(m.prefixList.Items()) == 10 {
+				// zero-based indexing, so index 9 equals element 10
+				index = 9
+			} else if keypress == "0" && len(m.prefixList.Items()) < 10 {
+				// keep selected item where it was at
+				return m, nil
+			} else {
+				index, _ = strconv.Atoi(keypress)
+				index = index - 1
 			}
+			m.prefixList.Select(index)
+			m.continueWithSelectedItem()
+
+		case "enter":
+			m.continueWithSelectedItem()
 		}
 	}
 
