@@ -22,6 +22,7 @@ var (
 	nordAuroraGreen      = lipgloss.Color("#a3be8c")
 	nordAuroraYellow     = lipgloss.Color("#ebcb8b")
 	nordAuroraOrange     = lipgloss.Color("#d08770")
+	darkGrey             = lipgloss.Color("240")
 	filterPromptStyle    = lipgloss.NewStyle().Foreground(nordAuroraYellow)
 	filterCursorStyle    = lipgloss.NewStyle().Foreground(nordAuroraOrange)
 	titleStyle           = lipgloss.NewStyle().MarginLeft(2)
@@ -293,22 +294,38 @@ func (m *model) updateYNInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func renderCurrentLimit(charLimit int, input string) string {
+	padWidth := len(strconv.Itoa(charLimit))
+	count := fmt.Sprintf(fmt.Sprintf("%%0%dd", padWidth), len(input))
+	return lipgloss.NewStyle().Foreground(darkGrey).Render(fmt.Sprintf(
+		"[%s/%d]",
+		count,
+		charLimit,
+	))
+}
+
 func (m *model) View() string {
 	switch {
 	case !m.chosenPrefix:
 		return "\n" + m.prefixList.View()
 	case !m.chosenScope:
+		limit := renderCurrentLimit(m.scopeInput.CharLimit, m.scopeInput.Value())
+
 		return titleStyle.Render(fmt.Sprintf(
-			"%s%s (Enter to skip / Esc to cancel):\n%s",
+			"%s%s (Enter to skip / Esc to cancel) %s:\n%s",
 			m.previousInputTexts,
 			scopeInputText,
+			limit,
 			m.scopeInput.View(),
 		))
 	case !m.chosenMsg:
+		limit := renderCurrentLimit(m.msgInput.CharLimit, m.msgInput.Value())
+
 		return titleStyle.Render(fmt.Sprintf(
-			"%s%s (Esc to cancel):\n%s",
+			"%s%s (Esc to cancel) %s:\n%s",
 			m.previousInputTexts,
 			msgInputText,
+			limit,
 			m.msgInput.View(),
 		))
 	case !m.chosenBody:
