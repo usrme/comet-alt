@@ -26,12 +26,12 @@ func main() {
 		fail("Error: no files added to staging")
 	}
 
-	prefixes, signOff, err := loadConfig()
+	prefixes, signOff, config, err := loadConfig()
 	if err != nil {
 		fail("Error: %s", err)
 	}
 
-	m := newModel(prefixes)
+	m := newModel(prefixes, config)
 	if err := tea.NewProgram(m).Start(); err != nil {
 		fail("Error: %s", err)
 	}

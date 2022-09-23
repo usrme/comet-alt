@@ -74,7 +74,7 @@ type model struct {
 	quitting           bool
 }
 
-func newModel(prefixes []list.Item) *model {
+func newModel(prefixes []list.Item, config *config) *model {
 
 	// set up list
 	prefixList := list.New(prefixes, itemDelegate{}, defaultWidth, listHeight)
@@ -88,14 +88,28 @@ func newModel(prefixes []list.Item) *model {
 	// set up scope prompt
 	scopeInput := textinput.New()
 	scopeInput.Placeholder = "Scope"
-	scopeInput.CharLimit = 16
-	scopeInput.Width = 20
+
+	// when no limit was defined a default of 0 is used
+	if config.ScopeInputCharLimit == 0 {
+		scopeInput.CharLimit = 16
+		scopeInput.Width = 20
+	} else {
+		scopeInput.CharLimit = config.ScopeInputCharLimit
+		scopeInput.Width = config.ScopeInputCharLimit
+	}
 
 	// set up commit message prompt
 	commitInput := textinput.New()
 	commitInput.Placeholder = "Commit message"
-	commitInput.CharLimit = 100
-	commitInput.Width = 50
+
+	// when no limit was defined a default of 0 is used
+	if config.CommitInputCharLimit == 0 {
+		commitInput.CharLimit = 100
+		commitInput.Width = 50
+	} else {
+		commitInput.CharLimit = config.CommitInputCharLimit
+		commitInput.Width = config.CommitInputCharLimit
+	}
 
 	// set up add body confirmation
 	bodyConfirmation := textinput.New()

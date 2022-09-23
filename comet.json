@@ -1,5 +1,7 @@
 {
     "signOffCommits": false,
+    "scopeInputCharLimit": 100,
+    "commitInputCharLimit": 120,
     "prefixes": [
         {
             "title": "fix",
