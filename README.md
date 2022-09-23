@@ -2,7 +2,7 @@
 
 An alternatively configured [Comet](https://github.com/liamg/comet) to suit my own preferences.
 
-![Demo](demo.gif)
+![comet-alt-demo](https://user-images.githubusercontent.com/5902545/191939072-0b91d07c-fd82-4d38-9a53-b546895df216.gif)
 
 The way I've changed the original is for it to look and feel more like [Commitizen](https://github.com/commitizen-tools/commitizen) when invoking its sub-command `commit`. My only gripe was that the start-up speed was a tad on the slow side sometimes, given that it is Python, and that customizing the prompts wasn't as straight-forward as with Comet.
 
