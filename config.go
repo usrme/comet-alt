@@ -19,6 +19,7 @@ type config struct {
 	SignOffCommits       bool     `json:"signOffCommits"`
 	ScopeInputCharLimit  int      `json:"scopeInputCharLimit"`
 	CommitInputCharLimit int      `json:"commitInputCharLimit"`
+	TotalInputCharLimit  int      `json:"totalInputCharLimit"`
 }
 
 func (i prefix) Title() string       { return i.T }

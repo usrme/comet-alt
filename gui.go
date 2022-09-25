@@ -35,6 +35,8 @@ var (
 	scopeInputText       = "What is the scope?"
 	msgInputText         = "What is the commit message?"
 	bodyInputText        = "Do you need to specify a body/footer?"
+	constrainInput       bool
+	totalInputCharLimit  int
 )
 
 type itemDelegate struct{}
@@ -62,21 +64,24 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 }
 
 type model struct {
-	chosenPrefix       bool
-	chosenScope        bool
-	chosenMsg          bool
-	chosenBody         bool
-	specifyBody        bool
-	prefix             string
-	prefixDescription  string
-	scope              string
-	msg                string
-	prefixList         list.Model
-	msgInput           textinput.Model
-	scopeInput         textinput.Model
-	ynInput            textinput.Model
-	previousInputTexts string
-	quitting           bool
+	chosenPrefix        bool
+	chosenScope         bool
+	chosenMsg           bool
+	chosenBody          bool
+	specifyBody         bool
+	prefix              string
+	prefixDescription   string
+	scope               string
+	msg                 string
+	prefixList          list.Model
+	msgInput            textinput.Model
+	scopeInput          textinput.Model
+	ynInput             textinput.Model
+	constrainInput      bool
+	totalInputCharLimit int
+	previousInputTexts  string
+	typed               int
+	quitting            bool
 }
 
 func newModel(prefixes []list.Item, config *config) *model {
@@ -124,11 +129,20 @@ func newModel(prefixes []list.Item, config *config) *model {
 	bodyConfirmation.CharLimit = 1
 	bodyConfirmation.Width = 20
 
+	if config.TotalInputCharLimit == 0 {
+		constrainInput = false
+	} else {
+		constrainInput = true
+		totalInputCharLimit = config.TotalInputCharLimit
+	}
+
 	return &model{
-		prefixList: prefixList,
-		scopeInput: scopeInput,
-		msgInput:   commitInput,
-		ynInput:    bodyConfirmation,
+		prefixList:          prefixList,
+		scopeInput:          scopeInput,
+		msgInput:            commitInput,
+		ynInput:             bodyConfirmation,
+		constrainInput:      constrainInput,
+		totalInputCharLimit: totalInputCharLimit,
 	}
 }
 
@@ -174,6 +188,7 @@ func (m *model) continueWithSelectedItem() {
 			m.prefixList.Title,
 			lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(fmt.Sprintf("%s: %s", m.prefix, m.prefixDescription)),
 		)
+		m.typed = len(m.prefix) + len("(): ")
 		m.scopeInput.Focus()
 	}
 }
@@ -223,6 +238,7 @@ func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			m.chosenScope = true
 			m.scope = m.scopeInput.Value()
+			m.typed += len(m.scope)
 			m.previousInputTexts = fmt.Sprintf(
 				"%s%s %s\n",
 				m.previousInputTexts,
@@ -248,6 +264,7 @@ func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			m.chosenMsg = true
 			m.msg = m.msgInput.Value()
+			m.typed += len(m.msg)
 			m.previousInputTexts = fmt.Sprintf(
 				"%s%s %s\n",
 				m.previousInputTexts,
@@ -294,22 +311,43 @@ func (m *model) updateYNInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func renderCurrentLimit(charLimit int, input string) string {
-	padWidth := len(strconv.Itoa(charLimit))
-	count := fmt.Sprintf(fmt.Sprintf("%%0%dd", padWidth), len(input))
+func renderCurrentLimit(m *model, charLimit int, input string) string {
+	var limit, inputLength int
+	if m.constrainInput {
+		limit = m.totalInputCharLimit
+		inputLength = len(m.prefix) + len("(): ") + len(input) + len(m.scope)
+	} else {
+		limit = charLimit
+		inputLength = len(input)
+	}
+
+	padWidth := len(strconv.Itoa(limit))
+	count := fmt.Sprintf(fmt.Sprintf("%%0%dd", padWidth), inputLength)
+
 	return lipgloss.NewStyle().Foreground(darkGrey).Render(fmt.Sprintf(
 		"[%s/%d]",
 		count,
-		charLimit,
+		limit,
 	))
 }
 
 func (m *model) View() string {
+	lengthExceedMessage := "Number of characters equals total input limit. Value will be left blank"
+
 	switch {
 	case !m.chosenPrefix:
 		return "\n" + m.prefixList.View()
 	case !m.chosenScope:
-		limit := renderCurrentLimit(m.scopeInput.CharLimit, m.scopeInput.Value())
+		limit := renderCurrentLimit(m, m.scopeInput.CharLimit, m.scopeInput.Value())
+
+		if m.constrainInput {
+			m.scopeInput.CharLimit = m.totalInputCharLimit - m.typed
+			if m.scopeInput.CharLimit == 0 {
+				m.scopeInput.Placeholder = lengthExceedMessage
+				m.scopeInput.EchoMode = textinput.EchoNone
+				m.scopeInput.SetValue("")
+			}
+		}
 
 		return titleStyle.Render(fmt.Sprintf(
 			"%s%s (Enter to skip / Esc to cancel) %s:\n%s",
@@ -319,7 +357,16 @@ func (m *model) View() string {
 			m.scopeInput.View(),
 		))
 	case !m.chosenMsg:
-		limit := renderCurrentLimit(m.msgInput.CharLimit, m.msgInput.Value())
+		limit := renderCurrentLimit(m, m.msgInput.CharLimit, m.msgInput.Value())
+
+		if m.constrainInput {
+			m.msgInput.CharLimit = m.totalInputCharLimit - m.typed
+			if m.msgInput.CharLimit == 0 {
+				m.msgInput.Placeholder = lengthExceedMessage
+				m.msgInput.EchoMode = textinput.EchoNone
+				m.msgInput.SetValue("")
+			}
+		}
 
 		return titleStyle.Render(fmt.Sprintf(
 			"%s%s (Esc to cancel) %s:\n%s",
