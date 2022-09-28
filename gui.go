@@ -19,15 +19,20 @@ const (
 )
 
 var (
-	nordAuroraGreen      = lipgloss.Color("#a3be8c")
-	nordAuroraYellow     = lipgloss.Color("#ebcb8b")
-	nordAuroraOrange     = lipgloss.Color("#d08770")
-	darkGrey             = lipgloss.Color("240")
-	filterPromptStyle    = lipgloss.NewStyle().Foreground(nordAuroraYellow)
-	filterCursorStyle    = lipgloss.NewStyle().Foreground(nordAuroraOrange)
+	// #81a1c1: nord9
+	// #88c0d0: nord8
+	filterPromptStyle = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#81a1c1", Dark: "#88c0d0"})
+	// #5e81ac: nord10
+	// #8fbcbb: nord7
+	filterCursorStyle    = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#5e81ac", Dark: "#8fbcbb"})
 	titleStyle           = lipgloss.NewStyle().MarginLeft(2)
 	itemStyle            = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle    = lipgloss.NewStyle().PaddingLeft(2).Foreground(nordAuroraGreen)
+	characterCountColors = lipgloss.AdaptiveColor{Light: "#8dacb6", Dark: "240"}
+	// #d08770: nord12
+	// #a3be8c: nord13
+	selectedItemColors   = lipgloss.AdaptiveColor{Light: "#d08770", Dark: "#a3be8c"}
+	selectedItemStyle    = lipgloss.NewStyle().Foreground(selectedItemColors)
+	selectedItemPadded   = selectedItemStyle.Copy().PaddingLeft(2)
 	itemDescriptionStyle = lipgloss.NewStyle().PaddingLeft(2).Faint(true)
 	paginationStyle      = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle            = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
@@ -54,7 +59,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	var output string
 	if index == m.Index() {
-		output = selectedItemStyle.Render("» " + str)
+		output = selectedItemPadded.Render("» " + str)
 	} else {
 		output = itemStyle.Render(str)
 	}
@@ -186,7 +191,7 @@ func (m *model) continueWithSelectedItem() {
 		m.previousInputTexts = fmt.Sprintf(
 			"\n%s %s\n",
 			m.prefixList.Title,
-			lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(fmt.Sprintf("%s: %s", m.prefix, m.prefixDescription)),
+			selectedItemStyle.Render(fmt.Sprintf("%s: %s", m.prefix, m.prefixDescription)),
 		)
 		m.typed = len(m.prefix) + len("(): ")
 		m.scopeInput.Focus()
@@ -243,7 +248,7 @@ func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				"%s%s %s\n",
 				m.previousInputTexts,
 				scopeInputText,
-				lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(m.scope),
+				selectedItemStyle.Render(m.scope),
 			)
 			m.msgInput.Focus()
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -269,7 +274,7 @@ func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				"%s%s %s\n",
 				m.previousInputTexts,
 				msgInputText,
-				lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(m.msg),
+				selectedItemStyle.Render(m.msg),
 			)
 			m.ynInput.Focus()
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -298,7 +303,7 @@ func (m *model) updateYNInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				"%s%s %s\n",
 				m.previousInputTexts,
 				bodyInputText,
-				lipgloss.NewStyle().Foreground(nordAuroraGreen).Render(strconv.FormatBool(m.specifyBody)),
+				selectedItemStyle.Render(strconv.FormatBool(m.specifyBody)),
 			)
 			return m, tea.Quit
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -324,7 +329,7 @@ func renderCurrentLimit(m *model, charLimit int, input string) string {
 	padWidth := len(strconv.Itoa(limit))
 	count := fmt.Sprintf(fmt.Sprintf("%%0%dd", padWidth), inputLength)
 
-	return lipgloss.NewStyle().Foreground(darkGrey).Render(fmt.Sprintf(
+	return lipgloss.NewStyle().Foreground(characterCountColors).Render(fmt.Sprintf(
 		"[%s/%d]",
 		count,
 		limit,
