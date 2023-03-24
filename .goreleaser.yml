@@ -2,6 +2,9 @@ builds:
   - id: comet-alt
     main: .
     binary: comet-alt
+    goos:
+      - darwin
+      - linux
     ldflags:
       # https://pkg.go.dev/cmd/link
       #
