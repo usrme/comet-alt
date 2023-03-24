@@ -107,7 +107,7 @@ func newModel(prefixes []list.Item, config *config) *model {
 	scopeInput.Placeholder = "Scope"
 
 	// when no limit was defined a default of 0 is used
-	if config.ScopeInputCharLimit == 0 {
+	if config == nil || config.ScopeInputCharLimit == 0 {
 		scopeInput.CharLimit = 16
 		scopeInput.Width = 20
 	} else {
@@ -120,7 +120,7 @@ func newModel(prefixes []list.Item, config *config) *model {
 	commitInput.Placeholder = "Commit message"
 
 	// when no limit was defined a default of 0 is used
-	if config.CommitInputCharLimit == 0 {
+	if config == nil || config.CommitInputCharLimit == 0 {
 		commitInput.CharLimit = 100
 		commitInput.Width = 50
 	} else {
@@ -134,7 +134,7 @@ func newModel(prefixes []list.Item, config *config) *model {
 	bodyConfirmation.CharLimit = 1
 	bodyConfirmation.Width = 20
 
-	if config.TotalInputCharLimit == 0 {
+	if config == nil || config.TotalInputCharLimit == 0 {
 		constrainInput = false
 	} else {
 		constrainInput = true
