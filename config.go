@@ -73,25 +73,49 @@ var defaultPrefixes = []list.Item{
 	},
 }
 
-const configFile = ".comet.json"
+const applicationName = "comet"
 
 func loadConfig() ([]list.Item, bool, *config, error) {
-	if _, err := os.Stat(configFile); err == nil {
-		return loadConfigFile(configFile)
+	nonXdgConfigFile := ".comet.json"
+
+	// Check for configuration file local to current directory
+	if _, err := os.Stat(nonXdgConfigFile); err == nil {
+		return loadConfigFile(nonXdgConfigFile)
 	}
 
+	// Check for configuration file local to user's home directory
 	if home, err := os.UserHomeDir(); err == nil {
-		path := filepath.Join(home, configFile)
+		path := filepath.Join(home, nonXdgConfigFile)
 		if _, err := os.Stat(path); err == nil {
 			return loadConfigFile(path)
 		}
 	}
 
-	if _, err := os.Stat(configFile); err == nil {
-		return loadConfigFile(configFile)
+	// Check for configuration file according to XDG Base Directory Specification
+	if cfgDir, err := getConfigDir(); err == nil {
+		path := filepath.Join(cfgDir, "config.json")
+		if _, err := os.Stat(path); err == nil {
+			return loadConfigFile(path)
+		}
 	}
 
 	return defaultPrefixes, false, nil, nil
+}
+
+func getConfigDir() (string, error) {
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+
+	// If the value of the environment variable is unset, empty, or not an absolute path, use the default
+	if configDir == "" || configDir[0:1] != "/" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(homeDir, ".config", applicationName), nil
+	}
+
+	// The value of the environment variable is valid; use it
+	return filepath.Join(configDir, applicationName), nil
 }
 
 func loadConfigFile(path string) ([]list.Item, bool, *config, error) {
