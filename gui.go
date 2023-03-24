@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
@@ -37,6 +38,7 @@ var (
 	paginationStyle      = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle            = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
 	quitTextStyle        = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+	versionStyle         = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#9b9b9b", Dark: "#5c5c5c"}).Render
 	scopeInputText       = "What is the scope?"
 	msgInputText         = "What is the commit message?"
 	bodyInputText        = "Do you need to specify a body/footer?"
@@ -339,6 +341,8 @@ func renderCurrentLimit(m *model, charLimit int, input string) string {
 func (m *model) View() string {
 	lengthExceedMessage := "Number of characters equals total input limit. Value will be left blank"
 
+	m.prefixList.NewStatusMessage(versionStyle(pkgVersion()))
+
 	switch {
 	case !m.chosenPrefix:
 		return "\n" + m.prefixList.View()
@@ -395,4 +399,12 @@ func (m *model) View() string {
 			m.previousInputTexts,
 		))
 	}
+}
+
+func pkgVersion() string {
+	version := "unknown"
+	if info, ok := debug.ReadBuildInfo(); ok {
+		version = info.Main.Version
+	}
+	return version
 }
