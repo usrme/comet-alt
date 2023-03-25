@@ -73,7 +73,7 @@ var defaultPrefixes = []list.Item{
 	},
 }
 
-const applicationName = "comet"
+const applicationName = "comet-alt"
 
 func loadConfig() ([]list.Item, bool, *config, error) {
 	nonXdgConfigFile := ".comet.json"

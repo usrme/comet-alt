@@ -37,7 +37,7 @@ rm -rf "${GOPATH}/pkg/mod/github.com/usrme/comet-alt*"
 
 ## Usage
 
-There is an additional `comet.json` file that includes the prefixes and descriptions that I most prefer myself, which can be added to either the root of a repository or to one's home directory as `.comet.json`. Omitting this means that the same defaults are used as in the original.
+There is an additional `comet.json` file that includes the prefixes and descriptions that I most prefer myself, which can be added to either the root of a repository, to one's home directory as `.comet.json` or to `${XDG_CONFIG_HOME}/comet-alt/config.json`. Omitting this means that the same defaults are used as in the original.
 
 ### Setting character limits
 
