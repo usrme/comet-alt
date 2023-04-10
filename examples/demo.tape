@@ -2,7 +2,7 @@ Output examples/demo.gif
 
 Set Shell "bash"
 Set FontSize 20
-Set Width 1000
+Set Width 1350
 Set Height 600
 Set Padding 80
 Set Theme "nord"
