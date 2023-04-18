@@ -16,7 +16,7 @@ Sleep 1
 Enter
 
 # Enter program
-Type "comet-alt"
+Type "cometary"
 Sleep 500ms
 Enter
 Sleep 3

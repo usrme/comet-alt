@@ -1,4 +1,4 @@
-module github.com/usrme/comet-alt
+module github.com/usrme/cometary
 
 go 1.17
 

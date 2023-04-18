@@ -1,8 +1,8 @@
-# Comet Alt
+# Cometary
 
-An alternatively configured [Comet](https://github.com/liamg/comet) to suit my own preferences.
+An alternative to [Comet](https://github.com/liamg/comet) with additional features.
 
-![Comet Alt - animated GIF demo](examples/demo.gif)
+![Cometary - animated GIF demo](examples/demo.gif)
 
 The way I've changed the original is for it to look and feel more like [Commitizen](https://github.com/commitizen-tools/commitizen) when invoking its sub-command `commit`. My only gripe was that the start-up speed was a tad on the slow side sometimes, given that it is Python, and that customizing the prompts wasn't as straight-forward as with Comet.
 
@@ -15,29 +15,29 @@ Other minor changes include a fix to the prompt that asks for a commit message b
 - using `go install`:
 
 ```bash
-go install github.com/usrme/comet-alt@latest
+go install github.com/usrme/cometary@latest
 ```
 
-- download a binary from the [releases](https://github.com/usrme/comet-alt/releases) page
+- download a binary from the [releases](https://github.com/usrme/cometary/releases) page
 
 - build it yourself (requires Go 1.17+):
 
 ```bash
-git clone https://github.com/usrme/comet-alt.git
-cd comet-alt
+git clone https://github.com/usrme/cometary.git
+cd cometary
 go build
 ```
 
 ## Removal
 
 ```bash
-rm -f "${GOPATH}/bin/comet-alt"
-rm -rf "${GOPATH}/pkg/mod/github.com/usrme/comet-alt*"
+rm -f "${GOPATH}/bin/cometary"
+rm -rf "${GOPATH}/pkg/mod/github.com/usrme/cometary*"
 ```
 
 ## Usage
 
-There is an additional `comet.json` file that includes the prefixes and descriptions that I most prefer myself, which can be added to either the root of a repository, to one's home directory as `.comet.json` or to `${XDG_CONFIG_HOME}/comet-alt/config.json`. Omitting this means that the same defaults are used as in the original.
+There is an additional `comet.json` file that includes the prefixes and descriptions that I most prefer myself, which can be added to either the root of a repository, to one's home directory as `.comet.json` or to `${XDG_CONFIG_HOME}/cometary/config.json`. Omitting this means that the same defaults are used as in the original.
 
 ### Setting character limits
 

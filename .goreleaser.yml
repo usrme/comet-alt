@@ -1,7 +1,7 @@
 builds:
-  - id: comet-alt
+  - id: cometary
     main: .
-    binary: comet-alt
+    binary: cometary
     goos:
       - darwin
       - linux
