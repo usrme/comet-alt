@@ -7,6 +7,16 @@ import (
 	"strings"
 )
 
+func getChangedFiles() ([]string, error) {
+	cmd := exec.Command("git", "diff", "--no-ext-diff", "--cached", "--name-only")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return []string{}, fmt.Errorf(string(output))
+	}
+
+	return strings.Split(strings.TrimSpace(string(output)), "\n"), nil
+}
+
 func noFilesInStaging() (bool, error) {
 	cmd := exec.Command("git", "diff", "--no-ext-diff", "--cached", "--name-only")
 	output, err := cmd.CombinedOutput()

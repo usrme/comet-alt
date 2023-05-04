@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"golang.org/x/exp/maps"
 )
 
 func main() {
@@ -31,7 +34,13 @@ func main() {
 		fail("Error: %s", err)
 	}
 
-	m := newModel(prefixes, config)
+	changedFiles, err := getChangedFiles()
+	if err != nil {
+		fail("Error: %s", err)
+	}
+
+	uniquePaths := formUniquePaths(changedFiles, config.ScopeCompletionOrder)
+	m := newModel(prefixes, config, uniquePaths)
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fail("Error: %s", err)
 	}
@@ -51,4 +60,43 @@ func main() {
 func fail(format string, args ...interface{}) {
 	_, _ = fmt.Fprintf(os.Stderr, format+"\n", args...)
 	os.Exit(1)
+}
+
+func formUniquePaths(paths []string, scopeCompletionOrder string) []string {
+	uniqueMap := make(map[string]bool)
+	var joinedPaths []string
+	for _, p := range paths {
+		if _, ok := uniqueMap[p]; ok {
+			continue
+		}
+		s := strings.Split(p, "/")
+		for j, q := range s {
+			// Prevent overflow
+			if j+1 > len(s) {
+				continue
+			}
+			// Make sure leafs are added if they don't exist
+			if j+1 == len(s) {
+				if _, ok := uniqueMap[q]; !ok {
+					uniqueMap[q] = true
+				}
+			}
+			joinedPaths = append(joinedPaths, q)
+			joined := strings.Join(joinedPaths, "/")
+			if _, ok := uniqueMap[joined]; ok {
+				continue
+			}
+			uniqueMap[joined] = true
+		}
+		joinedPaths = []string{}
+	}
+
+	uniquePaths := maps.Keys(uniqueMap)
+	sort.Slice(uniquePaths, func(i, j int) bool {
+		if scopeCompletionOrder == "ascending" {
+			return len(uniquePaths[i]) < len(uniquePaths[j])
+		}
+		return len(uniquePaths[i]) > len(uniquePaths[j])
+	})
+	return uniquePaths
 }

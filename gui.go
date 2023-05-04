@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -89,9 +90,11 @@ type model struct {
 	previousInputTexts  string
 	typed               int
 	quitting            bool
+	changedFilePaths    []string
+	changedFileIndex    int
 }
 
-func newModel(prefixes []list.Item, config *config) *model {
+func newModel(prefixes []list.Item, config *config, changedFilePaths []string) *model {
 
 	// set up list
 	prefixList := list.New(prefixes, itemDelegate{}, defaultWidth, listHeight)
@@ -143,6 +146,13 @@ func newModel(prefixes []list.Item, config *config) *model {
 		totalInputCharLimit = config.TotalInputCharLimit
 	}
 
+	bindings := []key.Binding{
+		customKeys.Cycle,
+	}
+	// Make sure custom key have help text available
+	prefixList.AdditionalShortHelpKeys = func() []key.Binding { return bindings }
+	prefixList.AdditionalFullHelpKeys = func() []key.Binding { return bindings }
+
 	return &model{
 		prefixList:          prefixList,
 		scopeInput:          scopeInput,
@@ -150,6 +160,7 @@ func newModel(prefixes []list.Item, config *config) *model {
 		ynInput:             bodyConfirmation,
 		constrainInput:      constrainInput,
 		totalInputCharLimit: totalInputCharLimit,
+		changedFilePaths:    changedFilePaths,
 	}
 }
 
@@ -253,6 +264,14 @@ func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selectedItemStyle.Render(m.scope),
 			)
 			m.msgInput.Focus()
+		case tea.KeyTab:
+			m.scopeInput.SetValue(m.changedFilePaths[m.changedFileIndex])
+			if m.changedFileIndex+1 == len(m.changedFilePaths) {
+				m.changedFileIndex = 0
+				return m, nil
+			}
+			m.changedFileIndex += 1
+			m.scopeInput.CursorEnd()
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 		}

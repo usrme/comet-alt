@@ -20,6 +20,7 @@ type config struct {
 	ScopeInputCharLimit  int      `json:"scopeInputCharLimit"`
 	CommitInputCharLimit int      `json:"commitInputCharLimit"`
 	TotalInputCharLimit  int      `json:"totalInputCharLimit"`
+	ScopeCompletionOrder string   `json:"scopeCompletionOrder"`
 }
 
 func (i prefix) Title() string       { return i.T }
