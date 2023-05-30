@@ -2,9 +2,6 @@ builds:
   - id: cometary
     main: .
     binary: cometary
-    goos:
-      - darwin
-      - linux
     ldflags:
       # https://pkg.go.dev/cmd/link
       #
@@ -17,8 +14,6 @@ builds:
     env:
       # disable cross-compilation
       - CGO_ENABLED=0
-    hooks:
-      post: upx --best "{{ .Path }}"
 
 changelog:
   sort: asc
