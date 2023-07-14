@@ -9,6 +9,6 @@ type customKeyMap struct {
 var customKeys = customKeyMap{
 	Cycle: key.NewBinding(
 		key.WithKeys("tab"),
-		key.WithHelp("tab", "(scope) cycle through changed file paths"),
+		key.WithHelp("tab", "cycle through commit messages or changed file paths"),
 	),
 }
