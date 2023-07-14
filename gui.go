@@ -8,9 +8,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textinput"
-
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -92,9 +91,11 @@ type model struct {
 	quitting            bool
 	changedFilePaths    []string
 	changedFileIndex    int
+	commitMessages      []string
+	commitMessageIndex  int
 }
 
-func newModel(prefixes []list.Item, config *config, changedFilePaths []string) *model {
+func newModel(prefixes []list.Item, config *config, changedFilePaths []string, commitMessages []string) *model {
 
 	// set up list
 	prefixList := list.New(prefixes, itemDelegate{}, defaultWidth, listHeight)
@@ -161,6 +162,7 @@ func newModel(prefixes []list.Item, config *config, changedFilePaths []string) *
 		constrainInput:      constrainInput,
 		totalInputCharLimit: totalInputCharLimit,
 		changedFilePaths:    changedFilePaths,
+		commitMessages:      commitMessages,
 	}
 }
 
@@ -298,6 +300,16 @@ func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selectedItemStyle.Render(m.msg),
 			)
 			m.ynInput.Focus()
+		case tea.KeyTab:
+			if len(m.commitMessages) > 0 {
+				m.msgInput.SetValue(m.commitMessages[m.commitMessageIndex])
+				if m.commitMessageIndex+1 == len(m.commitMessages) {
+					m.commitMessageIndex = 0
+					return m, nil
+				}
+				m.commitMessageIndex += 1
+				m.msgInput.CursorEnd()
+			}
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 		}

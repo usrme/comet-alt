@@ -39,8 +39,17 @@ func main() {
 		fail("Error: %s", err)
 	}
 
+	commitMessages := []string{}
+	if len(os.Args) > 1 && os.Args[1] == "-message" {
+		commitMessages, err = findCommitMessages(os.Args[2])
+		if err != nil {
+			fail("Error: %s", err)
+		}
+	}
+
+	uniqueMessages := formUniqueMessages(commitMessages)
 	uniquePaths := formUniquePaths(changedFiles, config.ScopeCompletionOrder)
-	m := newModel(prefixes, config, uniquePaths)
+	m := newModel(prefixes, config, uniquePaths, uniqueMessages)
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fail("Error: %s", err)
 	}
@@ -60,6 +69,22 @@ func main() {
 func fail(format string, args ...interface{}) {
 	_, _ = fmt.Fprintf(os.Stderr, format+"\n", args...)
 	os.Exit(1)
+}
+
+func formUniqueMessages(messages []string) []string {
+	uniqueMap := make(map[string]bool)
+	for _, m := range messages {
+		// Given conventional commit adherence, the semicolon can be assumed
+		// to be a safe enough delimiter upon which to separate prefix, an
+		// optional scope, and the message
+		s := strings.Split(m, ":")
+		msg := strings.TrimSpace(s[1])
+		if _, ok := uniqueMap[msg]; ok {
+			continue
+		}
+		uniqueMap[msg] = true
+	}
+	return maps.Keys(uniqueMap)
 }
 
 func formUniquePaths(paths []string, scopeCompletionOrder string) []string {

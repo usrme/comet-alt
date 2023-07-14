@@ -48,6 +48,8 @@ There is an additional `comet.json` file that includes the prefixes and descript
 - To adjust the order of the scope completion values (i.e. longer or shorter strings first), then add the key `scopeOrderCompletion` into the `.comet.json` file with either `ascending` or `descending` as the values
   - Omitting the key uses a default order of descending
 
+There is also a `-message` flag that takes a string that will be used as the basis for a search among all commit messages. For example: if you're committing something of a chore and always just use the message "update dependencies", you can do `cometary -message "update"` and Cometary will populate the list of possible messages with those that include "update". This is similar to the search you could make with `git log --grep="update"`.
+
 ## Acknowledgments
 
 Couldn't have been possible without the work of [Liam Galvin](https://github.com/liamg).
