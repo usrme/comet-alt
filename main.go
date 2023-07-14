@@ -40,7 +40,7 @@ func main() {
 	}
 
 	commitMessages := []string{}
-	if len(os.Args) > 1 && os.Args[1] == "-message" {
+	if len(os.Args) > 1 && os.Args[1] == "-m" {
 		commitMessages, err = findCommitMessages(os.Args[2])
 		if err != nil {
 			fail("Error: %s", err)

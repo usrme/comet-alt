@@ -62,7 +62,7 @@ func findGitDir() (string, error) {
 
 func commit(msg string, body bool, signOff bool) error {
 	gitArgs := os.Args[1:]
-	if len(os.Args) > 1 && os.Args[1] == "-message" {
+	if len(os.Args) > 1 && os.Args[1] == "-m" {
 		gitArgs = os.Args[3:]
 	}
 	args := append([]string{
