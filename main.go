@@ -78,6 +78,10 @@ func formUniqueMessages(messages []string) []string {
 		// to be a safe enough delimiter upon which to separate prefix, an
 		// optional scope, and the message
 		s := strings.Split(m, ":")
+		// If m does not contain colon then it's not a valid conventional commit
+		if len(s) == 1 {
+			continue
+		}
 		msg := strings.TrimSpace(s[1])
 		if _, ok := uniqueMap[msg]; ok {
 			continue
