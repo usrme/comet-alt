@@ -39,13 +39,13 @@ rm -rf "${GOPATH}/pkg/mod/github.com/usrme/cometary*"
 
 There is an additional `comet.json` file that includes the prefixes and descriptions that I most prefer myself, which can be added to either the root of a repository, to one's home directory as `.comet.json` or to `${XDG_CONFIG_HOME}/cometary/config.json`. Omitting this means that the same defaults are used as in the original.
 
-- To adjust the character limit of the scope, add the key `scopeInputCharLimit` into the `.comet.json` file with the desired limit
+- To adjust the character limit of the scope, add the key `scopeInputCharLimit` into the configuration file with the desired limit
   - Omitting the key uses a default value of 16 characters
-- To adjust the character limit of the message, add the key `commitInputCharLimit` into the `.comet.json` file with the desired limit
+- To adjust the character limit of the message, add the key `commitInputCharLimit` into the configuration file with the desired limit
   - Omitting the key uses a default value of 100 characters
-- To adjust the total limit of characters in the *resulting* commit message, add the key `totalInputCharLimit` into the `.comet.json` file with the desired limit
+- To adjust the total limit of characters in the *resulting* commit message, add the key `totalInputCharLimit` into the configuration file with the desired limit
   - Adding this key overrides scope- and message-specific limits
-- To adjust the order of the scope completion values (i.e. longer or shorter strings first), then add the key `scopeOrderCompletion` into the `.comet.json` file with either `ascending` or `descending` as the values
+- To adjust the order of the scope completion values (i.e. longer or shorter strings first), then add the key `scopeOrderCompletion` into the configuration file with either `ascending` or `descending` as the values
   - Omitting the key uses a default order of descending
 
 There is also a `-m` flag that takes a string that will be used as the basis for a search among all commit messages. For example: if you're committing something of a chore and always just use the message "update dependencies", you can do `cometary -m update` (use quotation marks if argument to `-m` includes spaces) and Cometary will populate the list of possible messages with those that include "update", which can then be cycled through with the Tab key. This is similar to the search you could make with `git log --grep="update"`.
