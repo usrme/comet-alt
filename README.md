@@ -50,6 +50,8 @@ There is an additional `comet.json` file that includes the prefixes and descript
 
 There is also a `-m` flag that takes a string that will be used as the basis for a search among all commit messages. For example: if you're committing something of a chore and always just use the message "update dependencies", you can do `cometary -m update` (use quotation marks if argument to `-m` includes spaces) and Cometary will populate the list of possible messages with those that include "update", which can then be cycled through with the Tab key. This is similar to the search you could make with `git log --grep="update"`.
 
+By default the `-m` flag behavior is set to only populate with possible messages that adhere to conventional commits, but this behavior can be changed by setting the `findAllCommitMessages` value in the configuration file as `true`.
+
 ## Acknowledgments
 
 Couldn't have been possible without the work of [Liam Galvin](https://github.com/liamg).

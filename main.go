@@ -47,7 +47,7 @@ func main() {
 		}
 	}
 
-	uniqueMessages := formUniqueMessages(commitMessages)
+	uniqueMessages := formUniqueMessages(commitMessages, config.FindAllCommitMessages)
 	uniquePaths := formUniquePaths(changedFiles, config.ScopeCompletionOrder)
 	m := newModel(prefixes, config, uniquePaths, uniqueMessages)
 	if _, err := tea.NewProgram(m).Run(); err != nil {
@@ -71,18 +71,22 @@ func fail(format string, args ...interface{}) {
 	os.Exit(1)
 }
 
-func formUniqueMessages(messages []string) []string {
+func formUniqueMessages(messages []string, findAllCommitMessages bool) []string {
 	uniqueMap := make(map[string]bool)
+	var msg string
 	for _, m := range messages {
-		// Given conventional commit adherence, the semicolon can be assumed
-		// to be a safe enough delimiter upon which to separate prefix, an
-		// optional scope, and the message
-		s := strings.Split(m, ":")
-		// If m does not contain colon then it's not a valid conventional commit
-		if len(s) == 1 {
-			continue
+		if !findAllCommitMessages {
+			// Given conventional commit adherence, the semicolon can be assumed
+			// to be a safe enough delimiter upon which to separate prefix, an
+			// optional scope, and the message
+			s := strings.Split(m, ":")
+			// If m does not contain colon then it's not a valid conventional commit
+			if len(s) == 1 {
+				continue
+			}
+			msg = strings.TrimSpace(s[1])
 		}
-		msg := strings.TrimSpace(s[1])
+		msg = m
 		if _, ok := uniqueMap[msg]; ok {
 			continue
 		}

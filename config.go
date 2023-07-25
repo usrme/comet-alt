@@ -15,12 +15,13 @@ type prefix struct {
 }
 
 type config struct {
-	Prefixes             []prefix `json:"prefixes"`
-	SignOffCommits       bool     `json:"signOffCommits"`
-	ScopeInputCharLimit  int      `json:"scopeInputCharLimit"`
-	CommitInputCharLimit int      `json:"commitInputCharLimit"`
-	TotalInputCharLimit  int      `json:"totalInputCharLimit"`
-	ScopeCompletionOrder string   `json:"scopeCompletionOrder"`
+	Prefixes              []prefix `json:"prefixes"`
+	SignOffCommits        bool     `json:"signOffCommits"`
+	ScopeInputCharLimit   int      `json:"scopeInputCharLimit"`
+	CommitInputCharLimit  int      `json:"commitInputCharLimit"`
+	TotalInputCharLimit   int      `json:"totalInputCharLimit"`
+	ScopeCompletionOrder  string   `json:"scopeCompletionOrder"`
+	FindAllCommitMessages bool     `json:"findAllCommitMessages"`
 }
 
 func (i prefix) Title() string       { return i.T }
