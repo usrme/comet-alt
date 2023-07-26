@@ -7,16 +7,6 @@ import (
 	"strings"
 )
 
-func findCommitMessages(searchterm string) ([]string, error) {
-	cmd := exec.Command("git", "log", "--oneline", "--pretty=format:%s", "--grep="+searchterm)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return []string{}, fmt.Errorf(string(output))
-	}
-
-	return strings.Split(strings.TrimSpace(string(output)), "\n"), nil
-}
-
 func getChangedFiles() ([]string, error) {
 	cmd := exec.Command("git", "diff", "--no-ext-diff", "--cached", "--name-only")
 	output, err := cmd.CombinedOutput()

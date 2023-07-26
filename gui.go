@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"os/exec"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"golang.org/x/exp/maps"
 )
 
 const (
@@ -70,34 +72,36 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	_, _ = fmt.Fprint(w, output)
 }
 
+type commitMessagesMsg []string
+
 type model struct {
-	chosenPrefix        bool
-	chosenScope         bool
-	chosenMsg           bool
-	chosenBody          bool
-	specifyBody         bool
-	prefix              string
-	prefixDescription   string
-	scope               string
-	msg                 string
-	prefixList          list.Model
-	msgInput            textinput.Model
-	scopeInput          textinput.Model
-	ynInput             textinput.Model
-	constrainInput      bool
-	totalInputCharLimit int
-	previousInputTexts  string
-	typed               int
-	quitting            bool
-	changedFilePaths    []string
-	changedFileIndex    int
-	commitMessages      []string
-	commitMessageIndex  int
+	chosenPrefix          bool
+	chosenScope           bool
+	chosenMsg             bool
+	chosenBody            bool
+	specifyBody           bool
+	prefix                string
+	prefixDescription     string
+	scope                 string
+	msg                   string
+	prefixList            list.Model
+	msgInput              textinput.Model
+	scopeInput            textinput.Model
+	ynInput               textinput.Model
+	constrainInput        bool
+	totalInputCharLimit   int
+	previousInputTexts    string
+	typed                 int
+	quitting              bool
+	changedFilePaths      []string
+	changedFileIndex      int
+	commitSearchTerm      string
+	findAllCommitMessages bool
+	commitMessages        []string
+	commitMessageIndex    int
 }
 
-func newModel(prefixes []list.Item, config *config, changedFilePaths []string, commitMessages []string) *model {
-
-	// set up list
+func newModel(prefixes []list.Item, config *config, changedFilePaths []string, commitSearchTerm string, findAllCommitMessages bool) *model {
 	prefixList := list.New(prefixes, itemDelegate{}, defaultWidth, listHeight)
 	prefixList.Title = "What are you committing?"
 	prefixList.SetShowStatusBar(false)
@@ -108,7 +112,6 @@ func newModel(prefixes []list.Item, config *config, changedFilePaths []string, c
 	prefixList.FilterInput.PromptStyle = filterPromptStyle
 	prefixList.FilterInput.CursorStyle = filterCursorStyle
 
-	// set up scope prompt
 	scopeInput := textinput.New()
 	scopeInput.Placeholder = "Scope"
 
@@ -121,7 +124,6 @@ func newModel(prefixes []list.Item, config *config, changedFilePaths []string, c
 		scopeInput.Width = config.ScopeInputCharLimit
 	}
 
-	// set up commit message prompt
 	commitInput := textinput.New()
 	commitInput.Placeholder = "Commit message"
 
@@ -134,7 +136,6 @@ func newModel(prefixes []list.Item, config *config, changedFilePaths []string, c
 		commitInput.Width = config.CommitInputCharLimit
 	}
 
-	// set up add body confirmation
 	bodyConfirmation := textinput.New()
 	bodyConfirmation.Placeholder = "y/N"
 	bodyConfirmation.CharLimit = 1
@@ -150,39 +151,46 @@ func newModel(prefixes []list.Item, config *config, changedFilePaths []string, c
 	bindings := []key.Binding{
 		customKeys.Cycle,
 	}
-	// Make sure custom key have help text available
 	prefixList.AdditionalShortHelpKeys = func() []key.Binding { return bindings }
 	prefixList.AdditionalFullHelpKeys = func() []key.Binding { return bindings }
 
 	return &model{
-		prefixList:          prefixList,
-		scopeInput:          scopeInput,
-		msgInput:            commitInput,
-		ynInput:             bodyConfirmation,
-		constrainInput:      constrainInput,
-		totalInputCharLimit: totalInputCharLimit,
-		changedFilePaths:    changedFilePaths,
-		commitMessages:      commitMessages,
+		prefixList:            prefixList,
+		scopeInput:            scopeInput,
+		msgInput:              commitInput,
+		ynInput:               bodyConfirmation,
+		constrainInput:        constrainInput,
+		totalInputCharLimit:   totalInputCharLimit,
+		changedFilePaths:      changedFilePaths,
+		commitSearchTerm:      commitSearchTerm,
+		findAllCommitMessages: findAllCommitMessages,
 	}
 }
 
 func (m *model) Init() tea.Cmd {
-	return nil
+	return findCommitMessages(m.commitSearchTerm, m.findAllCommitMessages)
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch {
-	case !m.chosenPrefix:
-		return m.updatePrefixList(msg)
-	case !m.chosenScope:
-		return m.updateScopeInput(msg)
-	case !m.chosenMsg:
-		return m.updateMsgInput(msg)
-	case !m.chosenBody:
-		return m.updateYNInput(msg)
-	default:
-		return m, tea.Quit
+	switch msg := msg.(type) {
+	case commitMessagesMsg:
+		m.commitMessages = msg
+		return m, nil
+	case tea.KeyMsg:
+		switch {
+		case !m.chosenPrefix:
+			return m.updatePrefixList(msg)
+		case !m.chosenScope:
+			return m.updateScopeInput(msg)
+		case !m.chosenMsg:
+			return m.updateMsgInput(msg)
+		case !m.chosenBody:
+			return m.updateYNInput(msg)
+		default:
+			return m, tea.Quit
+		}
 	}
+	return m, nil
 }
 
 func (m *model) Finished() bool {
@@ -251,7 +259,6 @@ func (m *model) updatePrefixList(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -285,7 +292,6 @@ func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -321,7 +327,6 @@ func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) updateYNInput(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -429,6 +434,42 @@ func (m *model) View() string {
 			"%s\n---\n",
 			m.previousInputTexts,
 		))
+	}
+}
+
+func findCommitMessages(grep string, findAll bool) tea.Cmd {
+	return func() tea.Msg {
+		if grep == "" {
+			return commitMessagesMsg([]string{})
+		}
+		cmd := exec.Command("git", "log", "--oneline", "--pretty=format:%s", "--grep="+grep)
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return commitMessagesMsg([]string{})
+		}
+
+		messages := strings.Split(strings.TrimSpace(string(output)), "\n")
+		uniqueMap := make(map[string]bool)
+		var msg string
+		for _, m := range messages {
+			msg = m
+			if !findAll {
+				// Given conventional commit adherence, the semicolon can be assumed
+				// to be a safe enough delimiter upon which to separate prefix, an
+				// optional scope, and the message
+				s := strings.Split(m, ":")
+				// If m does not contain colon then it's not a valid conventional commit
+				if len(s) == 1 {
+					continue
+				}
+				msg = strings.TrimSpace(s[1])
+			}
+			if _, ok := uniqueMap[msg]; ok {
+				continue
+			}
+			uniqueMap[msg] = true
+		}
+		return commitMessagesMsg(maps.Keys(uniqueMap))
 	}
 }
 
