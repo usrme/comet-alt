@@ -9,26 +9,26 @@ import (
 
 func main() {
 	if err := checkGitInPath(); err != nil {
-		fail("Error: %s", err)
+		fail(err.Error())
 	}
 
 	gitRoot, err := findGitDir()
 	if err != nil {
-		fail("Error: %s", err)
+		fail(err.Error())
 	}
 
 	if err := os.Chdir(gitRoot); err != nil {
-		fail("Error: could not change directory: %s", err)
+		fail("error changing directory: %s", err)
 	}
 
 	stagedFiles, err := filesInStaging()
 	if err != nil {
-		fail("Error: %s", err)
+		fail(err.Error())
 	}
 
 	prefixes, signOff, config, err := loadConfig()
 	if err != nil {
-		fail("Error: %s", err)
+		fail(err.Error())
 	}
 
 	commitSearchTerm := ""
@@ -38,18 +38,18 @@ func main() {
 
 	m := newModel(prefixes, config, stagedFiles, config.ScopeCompletionOrder, commitSearchTerm, config.FindAllCommitMessages)
 	if _, err := tea.NewProgram(m).Run(); err != nil {
-		fail("Error: %s", err)
+		fail(err.Error())
 	}
 
 	fmt.Println("")
 
 	if !m.Finished() {
-		fail("Aborted.")
+		fail("terminated")
 	}
 
 	msg, withBody := m.CommitMessage()
 	if err := commit(msg, withBody, signOff); err != nil {
-		fail("Error creating commit: %s", err)
+		fail("error committing: %s", err)
 	}
 }
 
