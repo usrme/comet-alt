@@ -14,12 +14,11 @@ func filesInStaging() ([]string, error) {
 	if err != nil {
 		return []string{}, fmt.Errorf(string(output))
 	}
-
-	files := strings.Split(strings.TrimSpace(string(output)), "\n")
-	if len(files) == 0 {
+	lines := strings.TrimSpace(string(output))
+	if lines == "" {
 		return []string{}, fmt.Errorf("no files added to staging area")
 	}
-	return files, nil
+	return strings.Split(lines, "\n"), nil
 }
 
 func checkGitInPath() error {
