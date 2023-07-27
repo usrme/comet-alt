@@ -4,6 +4,7 @@
     "commitInputCharLimit": 120,
     "totalInputCharLimit": 50,
     "scopeCompletionOrder": "ascending",
+    "findAllCommitMessages": true,
     "prefixes": [
         {
             "title": "fix",
