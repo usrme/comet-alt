@@ -5,6 +5,7 @@ import (
 	"io"
 	"os/exec"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -72,36 +73,41 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	_, _ = fmt.Fprint(w, output)
 }
 
-type commitMessagesMsg []string
+type (
+	stagedFilesMsg    []string
+	commitMessagesMsg []string
+)
 
 type model struct {
-	chosenPrefix          bool
-	chosenScope           bool
-	chosenMsg             bool
-	chosenBody            bool
-	specifyBody           bool
-	prefix                string
-	prefixDescription     string
-	scope                 string
-	msg                   string
-	prefixList            list.Model
-	msgInput              textinput.Model
-	scopeInput            textinput.Model
-	ynInput               textinput.Model
-	constrainInput        bool
-	totalInputCharLimit   int
-	previousInputTexts    string
-	typed                 int
-	quitting              bool
-	changedFilePaths      []string
-	changedFileIndex      int
-	commitSearchTerm      string
-	findAllCommitMessages bool
-	commitMessages        []string
-	commitMessageIndex    int
+	chosenPrefix           bool
+	chosenScope            bool
+	chosenMsg              bool
+	chosenBody             bool
+	specifyBody            bool
+	prefix                 string
+	prefixDescription      string
+	scope                  string
+	msg                    string
+	prefixList             list.Model
+	msgInput               textinput.Model
+	scopeInput             textinput.Model
+	ynInput                textinput.Model
+	constrainInput         bool
+	totalInputCharLimit    int
+	previousInputTexts     string
+	typed                  int
+	quitting               bool
+	stagedFiles            []string
+	scopeCompletionOrder   string
+	stagedFilePathSegments []string
+	scopeInputIndex        int
+	commitSearchTerm       string
+	findAllCommitMessages  bool
+	commitMessages         []string
+	messageInputIndex      int
 }
 
-func newModel(prefixes []list.Item, config *config, changedFilePaths []string, commitSearchTerm string, findAllCommitMessages bool) *model {
+func newModel(prefixes []list.Item, config *config, stagedFiles []string, scopeCompletionOrder, commitSearchTerm string, findAllCommitMessages bool) *model {
 	prefixList := list.New(prefixes, itemDelegate{}, defaultWidth, listHeight)
 	prefixList.Title = "What are you committing?"
 	prefixList.SetShowStatusBar(false)
@@ -161,21 +167,22 @@ func newModel(prefixes []list.Item, config *config, changedFilePaths []string, c
 		ynInput:               bodyConfirmation,
 		constrainInput:        constrainInput,
 		totalInputCharLimit:   totalInputCharLimit,
-		changedFilePaths:      changedFilePaths,
+		stagedFiles:           stagedFiles,
+		scopeCompletionOrder:  scopeCompletionOrder,
 		commitSearchTerm:      commitSearchTerm,
 		findAllCommitMessages: findAllCommitMessages,
 	}
 }
 
 func (m *model) Init() tea.Cmd {
-	return findCommitMessages(m.commitSearchTerm, m.findAllCommitMessages)
+	return tea.Batch(
+		formUniquePaths(m.stagedFiles, m.scopeCompletionOrder),
+		findCommitMessages(m.commitSearchTerm, m.findAllCommitMessages),
+	)
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case commitMessagesMsg:
-		m.commitMessages = msg
-		return m, nil
 	case tea.KeyMsg:
 		switch {
 		case !m.chosenPrefix:
@@ -189,6 +196,12 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		default:
 			return m, tea.Quit
 		}
+	case stagedFilesMsg:
+		m.stagedFilePathSegments = msg
+		return m, nil
+	case commitMessagesMsg:
+		m.commitMessages = msg
+		return m, nil
 	}
 	return m, nil
 }
@@ -274,12 +287,12 @@ func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 			m.msgInput.Focus()
 		case tea.KeyTab:
-			m.scopeInput.SetValue(m.changedFilePaths[m.changedFileIndex])
-			if m.changedFileIndex+1 == len(m.changedFilePaths) {
-				m.changedFileIndex = 0
+			m.scopeInput.SetValue(m.stagedFilePathSegments[m.scopeInputIndex])
+			if m.scopeInputIndex+1 == len(m.stagedFilePathSegments) {
+				m.scopeInputIndex = 0
 				return m, nil
 			}
-			m.changedFileIndex += 1
+			m.scopeInputIndex += 1
 			m.scopeInput.CursorEnd()
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -308,12 +321,12 @@ func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ynInput.Focus()
 		case tea.KeyTab:
 			if len(m.commitMessages) > 0 {
-				m.msgInput.SetValue(m.commitMessages[m.commitMessageIndex])
-				if m.commitMessageIndex+1 == len(m.commitMessages) {
-					m.commitMessageIndex = 0
+				m.msgInput.SetValue(m.commitMessages[m.messageInputIndex])
+				if m.messageInputIndex+1 == len(m.commitMessages) {
+					m.messageInputIndex = 0
 					return m, nil
 				}
-				m.commitMessageIndex += 1
+				m.messageInputIndex += 1
 				m.msgInput.CursorEnd()
 			}
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -434,6 +447,47 @@ func (m *model) View() string {
 			"%s\n---\n",
 			m.previousInputTexts,
 		))
+	}
+}
+
+func formUniquePaths(stagedFiles []string, scopeCompletionOrder string) tea.Cmd {
+	return func() tea.Msg {
+		uniqueMap := make(map[string]bool)
+		var joinedPaths []string
+		for _, p := range stagedFiles {
+			if _, ok := uniqueMap[p]; ok {
+				continue
+			}
+			s := strings.Split(p, "/")
+			for j, q := range s {
+				// Prevent overflow
+				if j+1 > len(s) {
+					continue
+				}
+				// Make sure leafs are added if they don't exist
+				if j+1 == len(s) {
+					if _, ok := uniqueMap[q]; !ok {
+						uniqueMap[q] = true
+					}
+				}
+				joinedPaths = append(joinedPaths, q)
+				joined := strings.Join(joinedPaths, "/")
+				if _, ok := uniqueMap[joined]; ok {
+					continue
+				}
+				uniqueMap[joined] = true
+			}
+			joinedPaths = []string{}
+		}
+
+		uniquePaths := maps.Keys(uniqueMap)
+		sort.Slice(uniquePaths, func(i, j int) bool {
+			if scopeCompletionOrder == "ascending" {
+				return len(uniquePaths[i]) < len(uniquePaths[j])
+			}
+			return len(uniquePaths[i]) > len(uniquePaths[j])
+		})
+		return stagedFilesMsg(uniquePaths)
 	}
 }
 
