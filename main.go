@@ -3,11 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"sort"
-	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"golang.org/x/exp/maps"
 )
 
 func main() {
@@ -24,17 +21,12 @@ func main() {
 		fail("Error: could not change directory: %s", err)
 	}
 
-	noAddedFiles, _ := noFilesInStaging()
-	if noAddedFiles {
-		fail("Error: no files added to staging")
-	}
-
-	prefixes, signOff, config, err := loadConfig()
+	stagedFiles, err := filesInStaging()
 	if err != nil {
 		fail("Error: %s", err)
 	}
 
-	changedFiles, err := getChangedFiles()
+	prefixes, signOff, config, err := loadConfig()
 	if err != nil {
 		fail("Error: %s", err)
 	}
@@ -44,8 +36,7 @@ func main() {
 		commitSearchTerm = os.Args[2]
 	}
 
-	uniquePaths := formUniquePaths(changedFiles, config.ScopeCompletionOrder)
-	m := newModel(prefixes, config, uniquePaths, commitSearchTerm, config.FindAllCommitMessages)
+	m := newModel(prefixes, config, stagedFiles, config.ScopeCompletionOrder, commitSearchTerm, config.FindAllCommitMessages)
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fail("Error: %s", err)
 	}

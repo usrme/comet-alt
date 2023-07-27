@@ -7,29 +7,19 @@ import (
 	"strings"
 )
 
-func getChangedFiles() ([]string, error) {
+func filesInStaging() ([]string, error) {
 	cmd := exec.Command("git", "diff", "--no-ext-diff", "--cached", "--name-only")
 	output, err := cmd.CombinedOutput()
+
 	if err != nil {
 		return []string{}, fmt.Errorf(string(output))
 	}
 
-	return strings.Split(strings.TrimSpace(string(output)), "\n"), nil
-}
-
-func noFilesInStaging() (bool, error) {
-	cmd := exec.Command("git", "diff", "--no-ext-diff", "--cached", "--name-only")
-	output, err := cmd.CombinedOutput()
-
-	if err != nil {
-		return false, fmt.Errorf(string(output))
+	files := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(files) == 0 {
+		return []string{}, fmt.Errorf("no files added to staging area")
 	}
-
-	if strings.TrimSpace(string(output)) == "" {
-		return true, nil
-	} else {
-		return false, nil
-	}
+	return files, nil
 }
 
 func checkGitInPath() error {
