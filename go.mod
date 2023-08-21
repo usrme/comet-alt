@@ -6,7 +6,7 @@ require (
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.7.1
-	golang.org/x/exp v0.0.0-20230725093048-515e97ebf090
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 )
 
 require (
@@ -24,7 +24,7 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sahilm/fuzzy v0.1.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
-	golang.org/x/term v0.10.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/term v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 )
