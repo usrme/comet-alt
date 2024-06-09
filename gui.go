@@ -305,6 +305,9 @@ func (m *model) updateScopeInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) updateMsgInput(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.commitSearchTerm != "" && len(m.commitMessages) < 1 {
+		m.msgInput.Placeholder = "Still finding commit messages..."
+	}
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
