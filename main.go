@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -36,6 +37,13 @@ func main() {
 		commitSearchTerm = os.Args[2]
 	}
 
+	tracker, err := NewRuntimeTracker("")
+	if err != nil {
+		fail("error creating tracker: %s", err)
+	}
+
+	tracker.Start()
+
 	m := newModel(prefixes, config, stagedFiles, config.ScopeCompletionOrder, commitSearchTerm, config.FindAllCommitMessages)
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fail(err.Error())
@@ -51,6 +59,18 @@ func main() {
 	if err := commit(msg, withBody, signOff); err != nil {
 		fail("error committing: %s", err)
 	}
+
+	runtime, err := tracker.Stop()
+	if err != nil {
+		fail("error stopping tracker: %s", err)
+	}
+
+	fmt.Printf("Program ran for %.2f seconds\n", runtime)
+
+	// Print current statistics
+	stats := tracker.GetStats()
+	statsJSON, _ := json.MarshalIndent(stats, "", "  ")
+	fmt.Printf("\nCurrent statistics:\n%s\n", string(statsJSON))
 }
 
 func fail(format string, args ...interface{}) {

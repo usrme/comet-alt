@@ -22,6 +22,7 @@ type config struct {
 	TotalInputCharLimit   int      `json:"totalInputCharLimit"`
 	ScopeCompletionOrder  string   `json:"scopeCompletionOrder"`
 	FindAllCommitMessages bool     `json:"findAllCommitMessages"`
+	ShowRuntime           bool     `json:"showRuntime"`
 }
 
 func (i prefix) Title() string       { return i.T }
@@ -75,7 +76,7 @@ var defaultPrefixes = []list.Item{
 	},
 }
 
-const applicationName = "cometary"
+const ApplicationName = "cometary"
 
 func loadConfig() ([]list.Item, bool, *config, error) {
 	nonXdgConfigFile := ".comet.json"
@@ -94,7 +95,7 @@ func loadConfig() ([]list.Item, bool, *config, error) {
 	}
 
 	// Check for configuration file according to XDG Base Directory Specification
-	if cfgDir, err := getConfigDir(); err == nil {
+	if cfgDir, err := GetConfigDir(); err == nil {
 		path := filepath.Join(cfgDir, "config.json")
 		if _, err := os.Stat(path); err == nil {
 			return loadConfigFile(path)
@@ -104,7 +105,7 @@ func loadConfig() ([]list.Item, bool, *config, error) {
 	return defaultPrefixes, false, nil, nil
 }
 
-func getConfigDir() (string, error) {
+func GetConfigDir() (string, error) {
 	configDir := os.Getenv("XDG_CONFIG_HOME")
 
 	// If the value of the environment variable is unset, empty, or not an absolute path, use the default
@@ -113,11 +114,11 @@ func getConfigDir() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return filepath.Join(homeDir, ".config", applicationName), nil
+		return filepath.Join(homeDir, ".config", ApplicationName), nil
 	}
 
 	// The value of the environment variable is valid; use it
-	return filepath.Join(configDir, applicationName), nil
+	return filepath.Join(configDir, ApplicationName), nil
 }
 
 func loadConfigFile(path string) ([]list.Item, bool, *config, error) {
