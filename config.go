@@ -22,7 +22,9 @@ type config struct {
 	TotalInputCharLimit   int      `json:"totalInputCharLimit"`
 	ScopeCompletionOrder  string   `json:"scopeCompletionOrder"`
 	FindAllCommitMessages bool     `json:"findAllCommitMessages"`
+	StoreRuntime          bool     `json:"storeRuntime"`
 	ShowRuntime           bool     `json:"showRuntime"`
+	ShowStats             bool     `json:"showStats"`
 }
 
 func (i prefix) Title() string       { return i.T }

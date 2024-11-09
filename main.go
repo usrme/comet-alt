@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -42,7 +41,9 @@ func main() {
 		fail("error creating tracker: %s", err)
 	}
 
-	tracker.Start()
+	if config.StoreRuntime || config.ShowRuntime {
+		tracker.Start()
+	}
 
 	m := newModel(prefixes, config, stagedFiles, config.ScopeCompletionOrder, commitSearchTerm, config.FindAllCommitMessages)
 	if _, err := tea.NewProgram(m).Run(); err != nil {
@@ -60,17 +61,27 @@ func main() {
 		fail("error committing: %s", err)
 	}
 
-	runtime, err := tracker.Stop()
-	if err != nil {
-		fail("error stopping tracker: %s", err)
+	if config.StoreRuntime || config.ShowRuntime {
+		runtime, err := tracker.Stop()
+		if err != nil {
+			fail("error stopping tracker: %s", err)
+		}
+
+		if config.ShowRuntime {
+			fmt.Println()
+			showTable([][]string{{"Session", fmt.Sprintf("%f", runtime)}})
+		}
 	}
 
-	fmt.Printf("Program ran for %.2f seconds\n", runtime)
-
-	// Print current statistics
-	stats := tracker.GetStats()
-	statsJSON, _ := json.MarshalIndent(stats, "", "  ")
-	fmt.Printf("\nCurrent statistics:\n%s\n", string(statsJSON))
+	if config.ShowStats {
+		stats := tracker.GetStats()
+		showTable([][]string{
+			{"Daily", fmt.Sprintf("%f", stats.Daily[stats.CurrentDay])},
+			{"Weekly", fmt.Sprintf("%f", stats.Weekly[stats.CurrentWeek])},
+			{"Monthly", fmt.Sprintf("%f", stats.Monthly[stats.CurrentMonth])},
+			{"Yearly", fmt.Sprintf("%f", stats.Yearly[stats.CurrentYear])},
+		})
+	}
 }
 
 func fail(format string, args ...interface{}) {

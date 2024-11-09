@@ -11,11 +11,15 @@ import (
 
 // Stats holds the runtime statistics for different time periods.
 type Stats struct {
-	Daily      map[string]float32 `json:"daily"`
-	Weekly     map[string]float32 `json:"weekly"`
-	Monthly    map[string]float32 `json:"monthly"`
-	Yearly     map[string]float32 `json:"yearly"`
-	LastUpdate string             `json:"last_update"`
+	Daily        map[string]float32 `json:"daily"`
+	CurrentDay   string
+	Weekly       map[string]float32 `json:"weekly"`
+	CurrentWeek  string
+	Monthly      map[string]float32 `json:"monthly"`
+	CurrentMonth string
+	Yearly       map[string]float32 `json:"yearly"`
+	CurrentYear  string
+	LastUpdate   string `json:"lastUpdate"`
 }
 
 // RuntimeTracker handles program runtime tracking.
@@ -108,9 +112,13 @@ func (rt *RuntimeTracker) Stop() (float32, error) {
 
 	// Update statistics
 	rt.stats.Daily[date] += runtime
+	rt.stats.CurrentDay = date
 	rt.stats.Weekly[weekStr] += runtime
+	rt.stats.CurrentWeek = weekStr
 	rt.stats.Monthly[month] += runtime
+	rt.stats.CurrentMonth = month
 	rt.stats.Yearly[year] += runtime
+	rt.stats.CurrentYear = year
 	rt.stats.LastUpdate = endTime.Format(time.RFC3339)
 
 	// Save updated stats
