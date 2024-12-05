@@ -50,20 +50,24 @@ func main() {
 	}
 
 	if config.StoreRuntime || config.ShowRuntime {
-		runtime, err := tracker.Stop()
+		err := tracker.Stop()
 		if err != nil {
 			fail("error stopping tracker: %s", err)
 		}
 
 		if config.ShowRuntime {
+			stats := tracker.GetStats()
 			fmt.Println()
-			showTable([][]string{{"Session", fmt.Sprintf("%f", runtime)}})
+			showTable([][]string{
+				{"Session", fmt.Sprintf("%f", stats.Session)},
+			})
 		}
 	}
 
 	if config.ShowStats {
 		stats := tracker.GetStats()
 		showTable([][]string{
+			{"Session", fmt.Sprintf("%f", stats.Session)},
 			{"Daily", fmt.Sprintf("%f", stats.Daily[stats.CurrentDay])},
 			{"Weekly", fmt.Sprintf("%f", stats.Weekly[stats.CurrentWeek])},
 			{"Monthly", fmt.Sprintf("%f", stats.Monthly[stats.CurrentMonth])},

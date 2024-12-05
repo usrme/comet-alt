@@ -11,15 +11,16 @@ import (
 
 // Stats holds the runtime statistics for different time periods.
 type Stats struct {
+	Session      float32            `json:"session"`
 	Daily        map[string]float32 `json:"daily"`
-	CurrentDay   string
+	CurrentDay   string             `json:"currentDay"`
 	Weekly       map[string]float32 `json:"weekly"`
-	CurrentWeek  string
+	CurrentWeek  string             `json:"currentWeek"`
 	Monthly      map[string]float32 `json:"monthly"`
-	CurrentMonth string
+	CurrentMonth string             `json:"currentMonth"`
 	Yearly       map[string]float32 `json:"yearly"`
-	CurrentYear  string
-	LastUpdate   string `json:"lastUpdate"`
+	CurrentYear  string             `json:"currentYear"`
+	LastUpdate   string             `json:"lastUpdate"`
 }
 
 // RuntimeTracker handles program runtime tracking.
@@ -44,6 +45,7 @@ func NewRuntimeTracker(filename string) (*RuntimeTracker, error) {
 	rt := &RuntimeTracker{
 		statsFilePath: path,
 		stats: Stats{
+			Session: 0.0,
 			Daily:   make(map[string]float32),
 			Weekly:  make(map[string]float32),
 			Monthly: make(map[string]float32),
@@ -92,9 +94,9 @@ func (rt *RuntimeTracker) Start() {
 }
 
 // Stop ends tracking runtime and updates statistics.
-func (rt *RuntimeTracker) Stop() (float32, error) {
+func (rt *RuntimeTracker) Stop() error {
 	if rt.startTime.IsZero() {
-		return 0, fmt.Errorf("tracking was not started")
+		return fmt.Errorf("tracking was not started")
 	}
 
 	endTime := time.Now()
@@ -111,6 +113,7 @@ func (rt *RuntimeTracker) Stop() (float32, error) {
 	year := endTime.Format("2006")
 
 	// Update statistics
+	rt.stats.Session = runtime
 	rt.stats.Daily[date] += runtime
 	rt.stats.CurrentDay = date
 	rt.stats.Weekly[weekStr] += runtime
@@ -123,13 +126,13 @@ func (rt *RuntimeTracker) Stop() (float32, error) {
 
 	// Save updated stats
 	if err := rt.saveStats(); err != nil {
-		return runtime, fmt.Errorf("failed to save stats: %w", err)
+		return fmt.Errorf("failed to save stats: %w", err)
 	}
 
 	// Reset start time
 	rt.startTime = time.Time{}
 
-	return runtime, nil
+	return nil
 }
 
 // CleanupOldData removes data older than the specified number of days
