@@ -417,7 +417,7 @@ func (m *model) View() string {
 		}
 
 		return titleStyle.Render(fmt.Sprintf(
-			"%s%s (Enter to skip / Esc to cancel) %s:\n%s",
+			"%s%s (Enter to skip / Esc to cancel) %s\n%s",
 			m.previousInputTexts,
 			scopeInputText,
 			limit,
@@ -436,7 +436,7 @@ func (m *model) View() string {
 		}
 
 		return titleStyle.Render(fmt.Sprintf(
-			"%s%s (Esc to cancel) %s:\n%s",
+			"%s%s (Esc to cancel) %s\n%s",
 			m.previousInputTexts,
 			msgInputText,
 			limit,
@@ -444,7 +444,7 @@ func (m *model) View() string {
 		))
 	case !m.chosenBody:
 		return titleStyle.Render(fmt.Sprintf(
-			"%s%s (Esc to cancel):\n%s",
+			"%s%s (Esc to cancel)\n%s",
 			m.previousInputTexts,
 			bodyInputText,
 			m.ynInput.View(),
