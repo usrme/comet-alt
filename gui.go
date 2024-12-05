@@ -30,6 +30,7 @@ var (
 	// #5e81ac: nord10
 	// #8fbcbb: nord7
 	filterCursorStyle    = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#5e81ac", Dark: "#8fbcbb"})
+	titleTextStyle       = lipgloss.NewStyle()
 	titleStyle           = lipgloss.NewStyle().MarginLeft(2)
 	itemStyle            = lipgloss.NewStyle().PaddingLeft(4)
 	characterCountColors = lipgloss.AdaptiveColor{Light: "#8dacb6", Dark: "240"}
@@ -113,7 +114,7 @@ func newModel(prefixes []list.Item, config *config, stagedFiles []string, scopeC
 	prefixList.Title = "What are you committing?"
 	prefixList.SetShowStatusBar(false)
 	prefixList.SetFilteringEnabled(true)
-	prefixList.Styles.Title = titleStyle
+	prefixList.Styles.Title = titleTextStyle
 	prefixList.Styles.PaginationStyle = paginationStyle
 	prefixList.Styles.HelpStyle = helpStyle
 	prefixList.FilterInput.PromptStyle = filterPromptStyle
