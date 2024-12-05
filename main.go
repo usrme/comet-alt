@@ -3,30 +3,17 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	if err := checkGitInPath(); err != nil {
+	if err := findGitDir(); err != nil {
 		fail(err.Error())
-	}
-
-	gitRoot, err := findGitDir()
-	if err != nil {
-		fail(err.Error())
-	}
-
-	if err := os.Chdir(gitRoot); err != nil {
-		fail("error changing directory: %s", err)
 	}
 
 	stagedFiles, err := filesInStaging()
-	if err != nil {
-		fail(err.Error())
-	}
-
-	prefixes, signOff, config, err := loadConfig()
 	if err != nil {
 		fail(err.Error())
 	}
@@ -35,6 +22,8 @@ func main() {
 	if len(os.Args) > 1 && os.Args[1] == "-m" {
 		commitSearchTerm = os.Args[2]
 	}
+
+	config := loadConfig()
 
 	tracker, err := NewRuntimeTracker("")
 	if err != nil {
@@ -45,19 +34,18 @@ func main() {
 		tracker.Start()
 	}
 
-	m := newModel(prefixes, config, stagedFiles, config.ScopeCompletionOrder, commitSearchTerm, config.FindAllCommitMessages)
+	m := newModel(config, stagedFiles, commitSearchTerm)
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fail(err.Error())
 	}
 
 	fmt.Println("")
-
 	if !m.Finished() {
 		fail("terminated")
 	}
 
 	msg, withBody := m.CommitMessage()
-	if err := commit(msg, withBody, signOff); err != nil {
+	if err := commit(msg, withBody, config.SignOffCommits); err != nil {
 		fail("error committing: %s", err)
 	}
 
@@ -85,6 +73,9 @@ func main() {
 }
 
 func fail(format string, args ...interface{}) {
-	_, _ = fmt.Fprintf(os.Stderr, format+"\n", args...)
+	if !strings.HasSuffix(format, "\n") {
+		format = format + "\n"
+	}
+	_, _ = fmt.Fprintf(os.Stderr, format, args...)
 	os.Exit(1)
 }

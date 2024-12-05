@@ -109,7 +109,8 @@ type model struct {
 	messageInputIndex      int
 }
 
-func newModel(prefixes []list.Item, config *config, stagedFiles []string, scopeCompletionOrder, commitSearchTerm string, findAllCommitMessages bool) *model {
+func newModel(c *config, stagedFiles []string, commitSearchTerm string) *model {
+	prefixes := convertPrefixes(c.Prefixes)
 	prefixList := list.New(prefixes, itemDelegate{}, defaultWidth, listHeight)
 	prefixList.Title = "What are you committing?"
 	prefixList.SetShowStatusBar(false)
@@ -123,25 +124,23 @@ func newModel(prefixes []list.Item, config *config, stagedFiles []string, scopeC
 	scopeInput := textinput.New()
 	scopeInput.Placeholder = "Scope"
 
-	// when no limit was defined a default of 0 is used
-	if config == nil || config.ScopeInputCharLimit == 0 {
+	if c == nil || c.ScopeInputCharLimit == 0 {
 		scopeInput.CharLimit = 16
 		scopeInput.Width = 20
 	} else {
-		scopeInput.CharLimit = config.ScopeInputCharLimit
-		scopeInput.Width = config.ScopeInputCharLimit
+		scopeInput.CharLimit = c.ScopeInputCharLimit
+		scopeInput.Width = c.ScopeInputCharLimit
 	}
 
 	commitInput := textinput.New()
 	commitInput.Placeholder = "Commit message"
 
-	// when no limit was defined a default of 0 is used
-	if config == nil || config.CommitInputCharLimit == 0 {
+	if c == nil || c.CommitInputCharLimit == 0 {
 		commitInput.CharLimit = 100
 		commitInput.Width = 50
 	} else {
-		commitInput.CharLimit = config.CommitInputCharLimit
-		commitInput.Width = config.CommitInputCharLimit
+		commitInput.CharLimit = c.CommitInputCharLimit
+		commitInput.Width = c.CommitInputCharLimit
 	}
 
 	bodyConfirmation := textinput.New()
@@ -149,11 +148,11 @@ func newModel(prefixes []list.Item, config *config, stagedFiles []string, scopeC
 	bodyConfirmation.CharLimit = 1
 	bodyConfirmation.Width = 20
 
-	if config == nil || config.TotalInputCharLimit == 0 {
+	if c == nil || c.TotalInputCharLimit == 0 {
 		constrainInput = false
 	} else {
 		constrainInput = true
-		totalInputCharLimit = config.TotalInputCharLimit
+		totalInputCharLimit = c.TotalInputCharLimit
 	}
 
 	bindings := []key.Binding{
@@ -170,10 +169,18 @@ func newModel(prefixes []list.Item, config *config, stagedFiles []string, scopeC
 		constrainInput:        constrainInput,
 		totalInputCharLimit:   totalInputCharLimit,
 		stagedFiles:           stagedFiles,
-		scopeCompletionOrder:  scopeCompletionOrder,
+		scopeCompletionOrder:  c.ScopeCompletionOrder,
 		commitSearchTerm:      commitSearchTerm,
-		findAllCommitMessages: findAllCommitMessages,
+		findAllCommitMessages: c.FindAllCommitMessages,
 	}
+}
+
+func convertPrefixes(prefixes []prefix) []list.Item {
+	var output []list.Item
+	for _, prefix := range prefixes {
+		output = append(output, prefix)
+	}
+	return output
 }
 
 func (m *model) Init() tea.Cmd {
