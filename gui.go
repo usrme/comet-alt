@@ -38,7 +38,7 @@ var (
 	// #a3be8c: nord13
 	selectedItemColors   = lipgloss.AdaptiveColor{Light: "#d08770", Dark: "#a3be8c"}
 	selectedItemStyle    = lipgloss.NewStyle().Foreground(selectedItemColors)
-	selectedItemPadded   = selectedItemStyle.Copy().PaddingLeft(2)
+	selectedItemPadded   = lipgloss.NewStyle().Foreground(selectedItemColors).PaddingLeft(2)
 	itemDescriptionStyle = lipgloss.NewStyle().PaddingLeft(2).Faint(true)
 	paginationStyle      = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle            = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
@@ -118,7 +118,7 @@ func newModel(prefixes []list.Item, config *config, stagedFiles []string, scopeC
 	prefixList.Styles.PaginationStyle = paginationStyle
 	prefixList.Styles.HelpStyle = helpStyle
 	prefixList.FilterInput.PromptStyle = filterPromptStyle
-	prefixList.FilterInput.CursorStyle = filterCursorStyle
+	prefixList.FilterInput.Cursor.Style = filterCursorStyle
 
 	scopeInput := textinput.New()
 	scopeInput.Placeholder = "Scope"
