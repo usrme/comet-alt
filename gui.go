@@ -66,7 +66,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	var output string
 	if index == m.Index() {
-		output = selectedItemPadded.Render("» " + str)
+		output = selectedItemPadded.Render("> " + str)
 	} else {
 		output = itemStyle.Render(str)
 	}
