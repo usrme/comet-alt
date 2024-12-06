@@ -58,6 +58,7 @@ There is an additional `comet.json` file that includes the prefixes and descript
   - This will show `> Session: N seconds` after the commit was successful
 - To show the all-time runtime statistics after each commit, add the key `showStats` with the value `true`
   - Default: `false`
+  - To just show the all-time runtime statistics and quit the program, run the program with the `-s` flag
 - To adjust the format of the statistics from seconds to hours or minutes, add the key `showStatsFormat` with either `"minutes"` or `"hours"`
   - Default: `"seconds"`
 - To always show session runtime statistics as seconds but keep everything else as defined by `showStatsFormat`, add the key `sessionStatAsSeconds` with the value `true`
