@@ -24,12 +24,6 @@ const (
 )
 
 var (
-	// #81a1c1: nord9
-	// #88c0d0: nord8
-	filterPromptStyle = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#81a1c1", Dark: "#88c0d0"})
-	// #5e81ac: nord10
-	// #8fbcbb: nord7
-	filterCursorStyle    = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#5e81ac", Dark: "#8fbcbb"})
 	titleTextStyle       = lipgloss.NewStyle()
 	titleStyle           = lipgloss.NewStyle().MarginLeft(2)
 	itemStyle            = lipgloss.NewStyle().PaddingLeft(4)
@@ -114,12 +108,10 @@ func newModel(c *config, stagedFiles []string, commitSearchTerm string) *model {
 	prefixList := list.New(prefixes, itemDelegate{}, defaultWidth, listHeight)
 	prefixList.Title = "What are you committing?"
 	prefixList.SetShowStatusBar(false)
-	prefixList.SetFilteringEnabled(true)
+	prefixList.SetFilteringEnabled(false)
 	prefixList.Styles.Title = titleTextStyle
 	prefixList.Styles.PaginationStyle = paginationStyle
 	prefixList.Styles.HelpStyle = helpStyle
-	prefixList.FilterInput.PromptStyle = filterPromptStyle
-	prefixList.FilterInput.Cursor.Style = filterCursorStyle
 
 	scopeInput := textinput.New()
 	scopeInput.Placeholder = "Scope"
