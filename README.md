@@ -42,14 +42,26 @@ rm -rf "${GOPATH}/pkg/mod/github.com/usrme/cometary*"
 
 There is an additional `comet.json` file that includes the prefixes and descriptions that I most prefer myself, which can be added to either the root of a repository, to one's home directory as `.comet.json` or to `${XDG_CONFIG_HOME}/cometary/config.json`. Omitting this means that the same defaults are used as in the original.
 
-- To adjust the character limit of the scope, add the key `scopeInputCharLimit` into the configuration file with the desired limit
-  - Omitting the key uses a default value of 16 characters
-- To adjust the character limit of the message, add the key `commitInputCharLimit` into the configuration file with the desired limit
-  - Omitting the key uses a default value of 100 characters
-- To adjust the total limit of characters in the *resulting* commit message, add the key `totalInputCharLimit` into the configuration file with the desired limit
+- To adjust the character limit of the scope, add the key `scopeInputCharLimit` with the desired limit
+  - Default: 16
+- To adjust the character limit of the message, add the key `commitInputCharLimit` with the desired limit
+  - Default: 100
+- To adjust the total limit of characters in the *resulting* commit message, add the key `totalInputCharLimit` with the desired limit
   - Adding this key overrides scope- and message-specific limits
-- To adjust the order of the scope completion values (i.e. longer or shorter strings first), then add the key `scopeOrderCompletion` into the configuration file with either `ascending` or `descending` as the values
-  - Omitting the key uses a default order of descending
+- To adjust the order of the scope completion values (i.e. longer or shorter strings first), add the key `scopeOrderCompletion` with either `"ascending"` or `"descending"`
+  - Default: `"descending"`
+- To enable the storing of runtime statistics, add the key `storeRuntime` with the value `true`
+  - Default: `false`
+  - This will create a `stats.json` file next to the configuration file with aggregated statistics across days, weeks, months, and years
+- To show the session runtime statistics after each commit, add the key `showRuntime` with the value `true`
+  - Default: `false`
+  - This will show `> Session: N seconds` after the commit was successful
+- To show the all-time runtime statistics after each commit, add the key `showStats` with the value `true`
+  - Default: `false`
+- To adjust the format of the statistics from seconds to hours or minutes, add the key `showStatsFormat` with either `"minutes"` or `"hours"`
+  - Default: `"seconds"`
+- To always show session runtime statistics as seconds but keep everything else as defined by `showStatsFormat`, add the key `sessionStatAsSeconds` with the value `true`
+  - Default: `false`
 
 There is also a `-m` flag that takes a string that will be used as the basis for a search among all commit messages. For example: if you're committing something of a chore and always just use the message "update dependencies", you can do `cometary -m update` (use quotation marks if argument to `-m` includes spaces) and Cometary will populate the list of possible messages with those that include "update", which can then be cycled through with the Tab key. This is similar to the search you could make with `git log --grep="update"`.
 
