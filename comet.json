@@ -1,10 +1,15 @@
 {
     "signOffCommits": false,
-    "scopeInputCharLimit": 100,
-    "commitInputCharLimit": 120,
-    "totalInputCharLimit": 50,
-    "scopeCompletionOrder": "ascending",
-    "findAllCommitMessages": true,
+    "scopeInputCharLimit": 16,
+    "commitInputCharLimit": 100,
+    "totalInputCharLimit": 0,
+    "scopeCompletionOrder": "descending",
+    "findAllCommitMessages": false,
+    "storeRuntime": true,
+    "showRuntime": true,
+    "showStats": true,
+    "showStatsFormat": "minutes",
+    "sessionStatAsSeconds": false,
     "prefixes": [
         {
             "title": "fix",

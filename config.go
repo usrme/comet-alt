@@ -2,11 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/charmbracelet/bubbles/list"
 )
 
 type prefix struct {
@@ -22,54 +19,59 @@ type config struct {
 	TotalInputCharLimit   int      `json:"totalInputCharLimit"`
 	ScopeCompletionOrder  string   `json:"scopeCompletionOrder"`
 	FindAllCommitMessages bool     `json:"findAllCommitMessages"`
+	StoreRuntime          bool     `json:"storeRuntime"`
+	ShowRuntime           bool     `json:"showRuntime"`
+	ShowStats             bool     `json:"showStats"`
+	ShowStatsFormat       string   `json:"showStatsFormat"`
+	SessionStatAsSeconds  bool     `json:"sessionStatAsSeconds"`
 }
 
 func (i prefix) Title() string       { return i.T }
 func (i prefix) Description() string { return i.D }
 func (i prefix) FilterValue() string { return i.T }
 
-var defaultPrefixes = []list.Item{
-	prefix{
+var defaultPrefixes = []prefix{
+	{
 		T: "feat",
 		D: "Introduces a new feature",
 	},
-	prefix{
+	{
 		T: "fix",
 		D: "Patches a bug",
 	},
-	prefix{
+	{
 		T: "docs",
 		D: "Documentation changes only",
 	},
-	prefix{
+	{
 		T: "test",
 		D: "Adding missing tests or correcting existing tests",
 	},
-	prefix{
+	{
 		T: "build",
 		D: "Changes that affect the build system",
 	},
-	prefix{
+	{
 		T: "ci",
 		D: "Changes to CI configuration files and scripts",
 	},
-	prefix{
+	{
 		T: "perf",
 		D: "A code change that improves performance",
 	},
-	prefix{
+	{
 		T: "refactor",
 		D: "A code change that neither fixes a bug nor adds a feature",
 	},
-	prefix{
+	{
 		T: "revert",
 		D: "Reverts a previous change",
 	},
-	prefix{
+	{
 		T: "style",
 		D: "Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)",
 	},
-	prefix{
+	{
 		T: "chore",
 		D: "A minor change which does not fit into any other category",
 	},
@@ -77,7 +79,7 @@ var defaultPrefixes = []list.Item{
 
 const applicationName = "cometary"
 
-func loadConfig() ([]list.Item, bool, *config, error) {
+func loadConfig() *config {
 	nonXdgConfigFile := ".comet.json"
 
 	// Check for configuration file local to current directory
@@ -94,20 +96,36 @@ func loadConfig() ([]list.Item, bool, *config, error) {
 	}
 
 	// Check for configuration file according to XDG Base Directory Specification
-	if cfgDir, err := getConfigDir(); err == nil {
+	if cfgDir, err := GetConfigDir(); err == nil {
 		path := filepath.Join(cfgDir, "config.json")
 		if _, err := os.Stat(path); err == nil {
 			return loadConfigFile(path)
 		}
 	}
 
-	return defaultPrefixes, false, nil, nil
+	return newConfig()
 }
 
-func getConfigDir() (string, error) {
+func newConfig() *config {
+	return &config{
+		Prefixes:              defaultPrefixes,
+		SignOffCommits:        false,
+		ScopeInputCharLimit:   16,
+		CommitInputCharLimit:  100,
+		TotalInputCharLimit:   0,
+		ScopeCompletionOrder:  "descending",
+		FindAllCommitMessages: false,
+		StoreRuntime:          false,
+		ShowRuntime:           false,
+		ShowStats:             false,
+		ShowStatsFormat:       "seconds",
+		SessionStatAsSeconds:  true,
+	}
+}
+
+func GetConfigDir() (string, error) {
 	configDir := os.Getenv("XDG_CONFIG_HOME")
 
-	// If the value of the environment variable is unset, empty, or not an absolute path, use the default
 	if configDir == "" || configDir[0:1] != "/" {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
@@ -116,30 +134,19 @@ func getConfigDir() (string, error) {
 		return filepath.Join(homeDir, ".config", applicationName), nil
 	}
 
-	// The value of the environment variable is valid; use it
 	return filepath.Join(configDir, applicationName), nil
 }
 
-func loadConfigFile(path string) ([]list.Item, bool, *config, error) {
+func loadConfigFile(path string) *config {
+	var c config
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, false, nil, fmt.Errorf("failed to read config file: %w", err)
+		return &c
 	}
-	var c config
+
 	if err := json.Unmarshal(data, &c); err != nil {
-		return nil, false, nil, fmt.Errorf("invalid json in config file '%s': %w", path, err)
+		return &c
 	}
 
-	return convertPrefixes(c.Prefixes), c.SignOffCommits, &c, nil
-}
-
-func convertPrefixes(prefixes []prefix) []list.Item {
-	var output []list.Item
-	for _, prefix := range prefixes {
-		output = append(output, prefix)
-	}
-	if len(output) == 0 {
-		return defaultPrefixes
-	}
-	return output
+	return &c
 }
