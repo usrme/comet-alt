@@ -14,7 +14,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/olekukonko/tablewriter"
 	"golang.org/x/exp/maps"
 )
 
@@ -534,26 +533,4 @@ func pkgVersion() string {
 		version = info.Main.Version
 	}
 	return version
-}
-
-func showTable(data [][]string) {
-	tableString := &strings.Builder{}
-	table := tablewriter.NewWriter(tableString)
-	table.SetHeader([]string{"Period", "Time"})
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.FgGreenColor}, tablewriter.Colors{tablewriter.FgGreenColor})
-	table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(false)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("-")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetTablePadding("\t")
-	table.SetNoWhiteSpace(true)
-	table.AppendBulk(data)
-	table.Render()
-	lines := strings.Split(tableString.String(), "\n")
-	for i := 0; i < len(lines); i++ {
-		fmt.Printf("  %s\n", lines[i])
-	}
 }

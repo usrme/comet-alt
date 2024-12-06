@@ -49,31 +49,46 @@ func main() {
 		fail("error committing: %s", err)
 	}
 
+	format := config.ShowStatsFormat
+	if config.SessionStatAsSeconds {
+		format = "seconds"
+	}
+
 	if config.StoreRuntime || config.ShowRuntime {
 		err := tracker.Stop()
 		if err != nil {
 			fail("error stopping tracker: %s", err)
 		}
 
-		if config.ShowRuntime {
+		if config.ShowRuntime && !config.ShowStats {
 			stats := tracker.GetStats()
 			fmt.Println()
-			showTable([][]string{
-				{"Session", fmt.Sprintf("%f", stats.Session)},
-			})
+			fmt.Println(formatStat("Session", stats.Session, format))
 		}
 	}
 
 	if config.ShowStats {
 		stats := tracker.GetStats()
-		showTable([][]string{
-			{"Session", fmt.Sprintf("%f", stats.Session)},
-			{"Daily", fmt.Sprintf("%f", stats.Daily[stats.CurrentDay])},
-			{"Weekly", fmt.Sprintf("%f", stats.Weekly[stats.CurrentWeek])},
-			{"Monthly", fmt.Sprintf("%f", stats.Monthly[stats.CurrentMonth])},
-			{"Yearly", fmt.Sprintf("%f", stats.Yearly[stats.CurrentYear])},
-		})
+		fmt.Println()
+		fmt.Println(formatStat("Session", stats.Session, format))
+		fmt.Println(formatStat("Daily", stats.Daily[stats.CurrentDay], config.ShowStatsFormat))
+		fmt.Println(formatStat("Weekly", stats.Weekly[stats.CurrentWeek], config.ShowStatsFormat))
+		fmt.Println(formatStat("Monthly", stats.Monthly[stats.CurrentMonth], config.ShowStatsFormat))
+		fmt.Println(formatStat("Yearly", stats.Yearly[stats.CurrentYear], config.ShowStatsFormat))
 	}
+}
+
+func formatStat(stat string, seconds float32, format string) string {
+	var value float32
+	switch format {
+	case "minutes":
+		value = seconds / 60.0
+	case "hours":
+		value = seconds / 3600.0
+	default:
+		value = seconds
+	}
+	return fmt.Sprintf(" > %s: %.2f %s", stat, value, format)
 }
 
 func fail(format string, args ...interface{}) {

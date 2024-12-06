@@ -22,6 +22,8 @@ type config struct {
 	StoreRuntime          bool     `json:"storeRuntime"`
 	ShowRuntime           bool     `json:"showRuntime"`
 	ShowStats             bool     `json:"showStats"`
+	ShowStatsFormat       string   `json:"showStatsFormat"`
+	SessionStatAsSeconds  bool     `json:"sessionStatAsSeconds"`
 }
 
 func (i prefix) Title() string       { return i.T }
@@ -116,6 +118,8 @@ func newConfig() *config {
 		StoreRuntime:          false,
 		ShowRuntime:           false,
 		ShowStats:             false,
+		ShowStatsFormat:       "seconds",
+		SessionStatAsSeconds:  true,
 	}
 }
 
