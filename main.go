@@ -9,6 +9,27 @@ import (
 )
 
 func main() {
+	config := loadConfig()
+
+	format := config.ShowStatsFormat
+	if config.SessionStatAsSeconds {
+		format = "seconds"
+	}
+
+	tracker, err := NewRuntimeTracker("")
+	if err != nil {
+		fail("error creating tracker: %s", err)
+	}
+
+	if len(os.Args) > 1 && os.Args[1] == "-s" {
+		stats := tracker.GetStats()
+		fmt.Println(formatStat("Daily", stats.Daily[stats.CurrentDay], config.ShowStatsFormat))
+		fmt.Println(formatStat("Weekly", stats.Weekly[stats.CurrentWeek], config.ShowStatsFormat))
+		fmt.Println(formatStat("Monthly", stats.Monthly[stats.CurrentMonth], config.ShowStatsFormat))
+		fmt.Println(formatStat("Yearly", stats.Yearly[stats.CurrentYear], config.ShowStatsFormat))
+		os.Exit(0)
+	}
+
 	if err := findGitDir(); err != nil {
 		fail(err.Error())
 	}
@@ -21,13 +42,6 @@ func main() {
 	commitSearchTerm := ""
 	if len(os.Args) > 1 && os.Args[1] == "-m" {
 		commitSearchTerm = os.Args[2]
-	}
-
-	config := loadConfig()
-
-	tracker, err := NewRuntimeTracker("")
-	if err != nil {
-		fail("error creating tracker: %s", err)
 	}
 
 	if config.StoreRuntime || config.ShowRuntime {
@@ -47,11 +61,6 @@ func main() {
 	msg, withBody := m.CommitMessage()
 	if err := commit(msg, withBody, config.SignOffCommits); err != nil {
 		fail("error committing: %s", err)
-	}
-
-	format := config.ShowStatsFormat
-	if config.SessionStatAsSeconds {
-		format = "seconds"
 	}
 
 	if config.StoreRuntime || config.ShowRuntime {
